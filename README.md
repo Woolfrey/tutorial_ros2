@@ -17,10 +17,10 @@ The `Publisher` and `Subcriber` protocol is analogous to the role of a news agen
 
 ## 1.1 Creating a Publisher
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#publishers--subscribers)
+[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
 ## 1.2 Creating a Subscriber
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#publishers--subscribers)
+[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
 [🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
