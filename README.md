@@ -8,13 +8,20 @@ This repository contains a series of coding tutorials based on the 3 communicati
 
 These objects are embedded within a `Node` which processes / sends / receives different types of data being sent over the ROS2 network.
 
+<p align="center">
+  <img src="assets/NodeInteraction.png" width=250 height="auto" alt="Node interactions."/>
+  <br>
+  <em>Figure 1: Nodes in ROS2 exchange information to complete automated tasks.</em>
+</p>
+
 Any number of these communicators may combined within a `Node` to achieve a desired task. The type of communication method depends on the type of data being transmitted, and how it is expected to be processed:
 
+**_Table 1: Properties of ROS2 Communication Protocols._**
 | Sender | Receiver | Node Interaction | Periodicity | Example(s) |
 |--------|----------|------------------|-------------|------------|
-| Publisher | Subscriber | One ➡️ Many | Frequent | Sensor data, joystick inputs. |
-| Client | Server | One ↔️ One| Upon request | Retreiving map updates. |
-| (Action) Client | (Action) Server | One ↔️ One | Upon request, with frequent updates. | Moving a robot to a target pose. |
+| Publisher | Subscriber | One ➡️ Many | Frequent | Sensor data, joystick inputs 🕹️ |
+| Client | Server | One ↔️ One| Upon request | Retreiving map updates 🗺️ |
+| (Action) Client | (Action) Server | One ↔️ One | Upon request, with frequent updates. | Moving a robot to a target location 📌 |
 
 The `Publisher` and `Subcriber` protocol is analogous to the role of a news agency, or book store. A printing press will publish magazines and/or books that are sent to a store. They are made publically available for people to purchase of their own volition. The type of data being communicated is fast, frequent, and numerous.
 
