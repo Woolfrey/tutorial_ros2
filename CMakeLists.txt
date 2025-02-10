@@ -27,14 +27,26 @@ endif()
 #                                          EXECUTABLES                                             #
 ####################################################################################################
 
-add_executable(publisher src/publisher.cpp src/HaikuPublisher.cpp)
+# Publisher node
+add_executable(publisher src/publisher.cpp
+                         src/HaikuPublisher.cpp)
+                         
 ament_target_dependencies(publisher
+                          "rclcpp"
+                          "std_msgs")
+                                                    
+# Subscriber node                      
+add_executable(subscriber src/subscriber.cpp
+                          src/HaikuSubscriber.cpp)
+                         
+ament_target_dependencies(subscriber
                           "rclcpp"
                           "std_msgs")
 
 # This is so ROS2 can find the executable when we call `ros2 run`                        
 install(TARGETS
         publisher
+        subscriber
         DESTINATION lib/${PROJECT_NAME}/
 )
 
