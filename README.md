@@ -8,6 +8,10 @@ This repository contains a series of coding tutorials based on the 3 communicati
 
 These objects are embedded within a `Node` which processes / sends / receives different types of data being sent over the ROS2 network.
 
+<p align="center">
+  <img src="assets/NodeInteraction.png" width=250 height="auto"/>
+</p>
+
 Any number of these communicators may combined within a `Node` to achieve a desired task. The type of communication method depends on the type of data being transmitted, and how it is expected to be processed:
 
 | Sender | Receiver | Node Interaction | Periodicity | Example(s) |
