@@ -11,7 +11,7 @@ These objects are embedded within a `Node` which processes / sends / receives di
 <p align="center">
   <img src="assets/NodeInteraction.png" width=250 height="auto" alt="Node interactions."/>
   <br>
-  <em>Figure. 1: Nodes in ROS2 exchange information to complete automated tasks.</em>
+  <em>Figure 1: Nodes in ROS2 exchange information to complete automated tasks.</em>
 </p>
 
 Any number of these communicators may combined within a `Node` to achieve a desired task. The type of communication method depends on the type of data being transmitted, and how it is expected to be processed:
