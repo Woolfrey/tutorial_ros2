@@ -4,7 +4,7 @@
 
 ### Contents:
 - [1.1 Creating a Publisher](https://github.com/Woolfrey/tutorial_ros2/edit/publisher/README.md#11-creating-a-publisher)
--  [1.2 Creating a Subscriber](https://github.com/Woolfrey/tutorial_ros2/edit/publisher/README.md#12-creating-a-subscriber)
+- [1.2 Creating a Subscriber](https://github.com/Woolfrey/tutorial_ros2/edit/publisher/README.md#12-creating-a-subscriber)
 
 
 The `Publisher` and `Subcriber` protocol is analogous to the role of a news agency, or book store. A printing press will publish magazines and/or books that are sent to a store. They are made publically available for people to purchase of their own volition. The type of data being communicated is fast, frequent, and numerous.
