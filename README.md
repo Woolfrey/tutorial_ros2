@@ -11,7 +11,7 @@ These objects are embedded within a `Node` which processes / sends / receives di
 <p align="center">
   <img src="assets/NodeInteraction.png" width=250 height="auto" alt="Node interactions."/>
   <br>
-  <em>Figure 1: Nodes in ROS2 exchange information to complete automated tasks.</em>
+  <em>Figure 1: Nodes in ROS2 combine different communication protocols to achieve complex tasks.</em>
 </p>
 
 Any number of these communicators may combined within a `Node` to achieve a desired task. The type of communication method depends on the type of data being transmitted, and how it is expected to be processed:
@@ -21,9 +21,15 @@ Any number of these communicators may combined within a `Node` to achieve a desi
 |--------|----------|------------------|-------------|------------|
 | Publisher | Subscriber | One ➡️ Many | Frequent | Sensor data, joystick inputs 🕹️ |
 | Client | Server | One ↔️ One| Upon request | Retreiving map updates 🗺️ |
-| (Action) Client | (Action) Server | One ↔️ One | Upon request, with frequent updates. | Moving a robot to a target location 📌 |
+| (Action) Client | (Action) Server | One ↔️ One | Upon request, with frequent updates. | Moving a robot to a target location :dart: |
 
 The `Publisher` and `Subcriber` protocol is analogous to the role of a news agency, or book store. A printing press will publish magazines and/or books that are sent to a store. They are made publically available for people to purchase of their own volition. The type of data being communicated is fast, frequent, and numerous.
+
+<p align="center">
+  <img src="assets/PublisherSubscriberModel.png" width="400" height="auto" alt="Publisher-Subscriber Model."/>
+  <br>
+  <em>Figure 2: Publishers make data publicly available for any number of subscribers.</em>
+</p>
 
 The `Client` and `Server` protocol is more akin to a postal service. A request is sent by a `Client` directly to a `Server`, who will process said request and send a reponse. The type of data being communicated is fast, infrequent, and sparse.
 
