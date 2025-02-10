@@ -1,0 +1,38 @@
+<mxfile host="Electron" modified="2025-02-10T20:08:23.920Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.2 Chrome/114.0.5735.289 Electron/25.9.4 Safari/537.36" etag="6B5cqsAE7kGY-oOmg-vJ" version="22.1.2" type="device">
+  <diagram name="Page-1" id="8EGf5PJ8fKklAHvfOpB1">
+    <mxGraphModel dx="644" dy="563" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="583" pageHeight="413" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="h3yLgzIW3ePe9xJ3h8Ra-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="h3yLgzIW3ePe9xJ3h8Ra-1" target="h3yLgzIW3ePe9xJ3h8Ra-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h3yLgzIW3ePe9xJ3h8Ra-21" value="Request" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=16;" vertex="1" connectable="0" parent="h3yLgzIW3ePe9xJ3h8Ra-9">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h3yLgzIW3ePe9xJ3h8Ra-1" value="Client" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="97" y="147" width="100" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="h3yLgzIW3ePe9xJ3h8Ra-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="h3yLgzIW3ePe9xJ3h8Ra-2" target="h3yLgzIW3ePe9xJ3h8Ra-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h3yLgzIW3ePe9xJ3h8Ra-24" value="Response" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=16;" vertex="1" connectable="0" parent="h3yLgzIW3ePe9xJ3h8Ra-10">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h3yLgzIW3ePe9xJ3h8Ra-2" value="Server" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="387" y="147" width="100" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="h3yLgzIW3ePe9xJ3h8Ra-19" value="" style="shape=message;html=1;html=1;outlineConnect=0;labelPosition=center;verticalLabelPosition=bottom;align=center;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="267" y="100" width="60" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="h3yLgzIW3ePe9xJ3h8Ra-23" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;shape=mxgraph.azure.cloud_service_package_file;" vertex="1" parent="1">
+          <mxGeometry x="261" y="257" width="61.25" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
