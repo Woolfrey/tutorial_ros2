@@ -40,3 +40,9 @@ The `Client` and `Service` protocol is more akin to a postal service. A request 
 </p>
 
 The `Action Client` and `Action Server` protocol is analogous to requesting transport with Uber. The request is made, a driver confirms the response, and updates are given in real time on how close the driver is to arrival. The interaction is infrequent, like the `Server` & `Client` protocol, but frequent updates are provided like the `Publisher` & `Subscriber`.
+
+<p align="center">
+  <img src="assets/ActionServerModel.png" width="400" height="auto" alt="Action Server Model."/>
+  <br>
+  <em>Figure 3: Actions carry out goals over an extended period of time, providing feedback.</em>
+</p>
