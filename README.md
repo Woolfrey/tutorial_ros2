@@ -10,7 +10,12 @@
   - [1.1.4 Create Configuration Files](#114-edit-the-configuration-files-hammer_and_wrench)
   - [1.1.5 Compiling & Running the Package](#115-compiling--running-the-package-computer)
 - [1.2 Creating a Subscriber](#12-creating-a-subscriber)
-
+  - [1.2.1 Create the Header File](#121-create-the-header-file-page_facing_up)
+  - [1.2.2 Create the Source File](#122-create-the-source-file-page_facing_up)
+  - [1.2.3 Create the Executable](#123-create-the-executable-gear)
+  - [1.2.4 Create Configuration Files](#124-edit-the-configuration-files-hammer_and_wrench)
+  - [1.2.5 Compiling & Running the Package](#125-compiling--running-the-package-computer)
+ 
 The folder structure for our package will look like this:
 ```
 ros2_workspace/
@@ -242,6 +247,14 @@ ament_target_dependencies(publisher
 ```
 This says that the `publisher` executable relies on the ROS2 C++ client libraries `rclcpp` (obviously!), and needs the `std_msgs` package within ROS2.
 
+We must also add these lines to install the publisher executable so that ROS2 can find it and run it:
+```
+install(TARGETS
+        publisher
+        DESTINATION lib/${PROJECT_NAME}/
+)
+```
+
 #### _The package.xml File:_
 
 Inside the `tutorial_ros2/package.xml` file ensure the following lines are present:
@@ -305,17 +318,240 @@ We can check the output of the `/haiku` topic using `ros2 topic echo /haiku`:
 
 ## 1.2 Creating a Subscriber
 
+A subscriber retrieves data from a known ROS2 topic (provided by a publisher) and processes it to create new, useful outputs. For example, robot arms will publish a `sensor_msgs::msg::JointState` topic containing information on the joint positions and velocities. A robot controller can subscribe to this data to compute the robot kinematics and perform motion planning.
+
 ### 1.2.1 Create the Header File :page_facing_up:
+
+As before, we are going to separate our interface definitions from Create a file `include/HaikuSubscriber.h` and insert the following code:
+```
+#ifndef HAIKU_SUBSCRIBER_H
+#define HAIKU_SUBSCRIBER_H
+
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+
+class HaikuSubscriber : public rclcpp::Node
+{
+    public:
+        
+        HaikuSubscriber(const std::string &nodeName = "haiku_subscriber",
+                        const std::string &topicName = "haiku");
+        
+    private:
+    
+        rclcpp::Subscription<std_msgs::msg::String>::SharedPtr _subscriber;
+
+        void callback(const std_msgs::msg::String::SharedPtr msg);
+};
+
+#endif
+```
+
+#### Inspecting the Code :mag:
+
+As before, we define a public constructor `HaikuSubscriber(...)` with input arguments for the node name, and topic.
+
+The two important properties are:
+1. `rclcpp::Subscription<std_msgs::msg::String>::SharedPtr _subscriber;`: This object will specifically handle the acquisition of messages for a defined topic, and
+2. `void callback(const std_msgs::msg::String::SharedPtr msg);`: A method that will be executed every time a new message is published, and process it in some way.
+
+Note that the subscription has a template argument `<std_msgs::msg::String>`; it expects a ROS2 string data type to be published, so this must match the output from the publisher.
+
+The callback method then takes a `const std_msgs::msg::String::SharedPtr` as an argument. The `const` means that we cannot alter the data in any way; only read it, copy it, etc.
+
+[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
 ### 1.2.2 Create the Source File :page_facing_up:
 
+In `src/HaikuSubscriber.cpp` we specify the implementation for the constructor, and callback method:
+```
+#include <HaikuSubscriber.h>
+
+HaikuSubscriber::HaikuSubscriber(const std::string &nodeName,
+                                 const std::string &topicName)
+                                 : Node(nodeName)
+{
+    RCLCPP_INFO(this->get_logger(), "Waiting for the '%s' topic to be advertised...", topicName.c_str());
+    
+    int elapsedTime = 0;
+    
+    while (rclcpp::ok() && this->count_publishers(topicName) == 0)
+    {
+        if (elapsedTime >= 5000)
+        {
+            RCLCPP_ERROR(this->get_logger(),
+                         "The '%s' topic did not appear within 5 seconds of waiting. "
+                         "Shutting down.", topicName.c_str());
+                         
+            rclcpp::shutdown();
+            
+            return;
+        }
+        
+        rclcpp::sleep_for(std::chrono::milliseconds(500));
+        elapsedTime += 500;
+    }
+
+    _subscriber = this->create_subscription<std_msgs::msg::String>(topicName,1, std::bind(&HaikuSubscriber::callback, this, std::placeholders::_1));
+
+    RCLCPP_INFO(this->get_logger(), "Reading you a haiku:");
+}
+
+void
+HaikuSubscriber::callback(const std_msgs::msg::String::SharedPtr msg)
+{
+    RCLCPP_INFO(this->get_logger(), "'%s'", msg->data.c_str());
+}
+```
+
+#### Inspecting the Code :mag:
+
+##### _The Constructor:_
+
+The `while` loop is used to ensure that the topic is being published before proceeding:
+```
+    while (rclcpp::ok() && this->count_publishers(topicName) == 0)
+    {
+      ...
+    }
+```
+This feature can be used to ensure that critical data is available before proceeding, and is also a helpful warning to users.
+
+In this line we create the subscription:
+```
+_subscriber = this->create_subscription<std_msgs::msg::String>(topicName,1, std::bind(&HaikuSubscriber::callback, this, std::placeholders::_1));
+```
+The key components are:
+- `this->` referring to this particular ROS node to which it is attached,
+- The `<std_msgs::msg::String>` template argument which must match that of the publisher,
+- `topicName` which will look for a topic under that specific name,
+- `std::bind` which ties the `HaikuSubscriber::callback` method found in `this` class to the subscriber.
+
+> [!NOTE]
+> By using the aforementioned `while` loop to check for the `topicName` topic, we ensure that its subscriber is generated.
+
+##### _The Callback Method:_
+
+The `callback()` method in this case is trivial. It simply prints the received message to the console.
+
+There are many other possibilies for what to do with the data. For example, we may do computations on numerical data and then use another publisher to make its output available. Or we may store it within a class member to be utilised at a later time.
+
+[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+
 ### 1.2.3 Create the Executable :gear:
 
-### 1.2.4 Create Configuration Files :hammer_and_wrench:
+As before, we create a separate executable in `src/subscriber.cpp`:
+```
+#include "HaikuSubscriber.h"
+#include "rclcpp/rclcpp.hpp"
+
+int main(int argc, char *argv[])
+{
+    rclcpp::init(argc, argv);
+    
+    auto haikuSubscriber = std::make_shared<HaikuSubscriber>("haiku_subscriber", "haiku");
+
+    rclcpp::executors::SingleThreadedExecutor executor;
+    executor.add_node(haikuSubscriber);
+    executor.spin();
+    
+    rclcpp::shutdown();
+    
+    return 0;
+}
+```
+
+#### Inspecting the Code :mag:
+
+The line:
+```
+rclcpp::init(argc, argv)
+```
+starts up ROS2 independent of any other node, including the subscriber.
+
+Here we create an instance of the `HaikuSubscriber` class:
+```
+auto haikuSubscriber = std::make_shared<HaikuSubscriber>("haiku_subscriber", "haiku");
+```
+The argument "haiku" must match what is advertised by the publisher.
+
+Then, in these 3 lines of code:
+```
+rclcpp::executors::SingleThreadedExecutor executor;
+executor.add_node(haikuSubscriber);
+executor.spin();
+```
+we:
+1. Create at executor for specifically running the node,
+2. Attach the newly created subscriber to the executor with `add_node(...)`, and then
+3. Run the executor / node with `spin()`.
+
+Using the OOP & executor framework, we could have run the publisher and subscriber in the same executable:
+```
+auto haikuPublisher = std::make_shared<HaikuPublisher>("haiku_publisher", "haiku", 1000);
+auto haikuSubscriber = std::make_shared<HaikuSubscriber>("haiku_subscriber", "haiku");
+
+rclcpp::executors::SingleThreadedExecutor executor;
+executor.add_node(haikuPublisher);
+executor.add_node(haikuSubscriber);
+executor.spin();
+```
+By running them in separate executables, however, we can make the code more modular and independent.
+
+[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+
+### 1.2.4 Edit the Configuration Files :hammer_and_wrench:
+
+We need to update the `CMakeListstxt` file to compile & install the new `subscriber.cpp` executable.
+
+First we can specify the name as `subscriber` and link the relevant source files:
+```
+add_executable(subscriber src/subscriber.cpp
+                          src/HaikuSubscriber.cpp)
+```
+Then list the dependencies, the same as the publisher:
+```
+ament_target_dependencies(subscriber
+                          "rclcpp"
+                          "std_msgs")
+```
+
+Then add the previously named `subscriber` to the install list so ROS2 can find it and run it:
+```
+install(TARGETS
+        publisher
+        subscriber
+        DESTINATION lib/${PROJECT_NAME}/
+)
+```
+
+[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
 ### 1.2.5 Compiling & Running the Package :computer:
 
-### 1.2.6 The Code Explained 🔎
+Navigate back to the root directory:
+```
+~/ros2_workspace
+```
+Then build the package:
+```
+colcon build --packages-select tutorial_ros2
+```
+
+It is a good idea to ensure that the publisher is first running:
+```
+ros2 run tutorial_ros2 publisher
+```
+Then in a separate terminal you can run the subscriber:
+```
+ros2 run tutorial_ros2 subscriber
+```
+<p align="center">
+  <img src="doc/subscriber.png" width="800" height="auto" alt="Screenshot of publisher and subscriber."/>
+  <br>
+  <em> Figure 4: The subscriber reading the output from the publisher.</em>
+</p>
+
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
