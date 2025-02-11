@@ -4,16 +4,12 @@
 
 ### Contents:
 - [1.1 Creating a Publisher](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#11-creating-a-publisher)
+  - [1.1.1 Create the Header File](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#111-create-the-header-file-page_facing_up)
+  - [1.1.2 Create the Source File](https://github.com/Woolfrey/tutorial_ros2/edit/publisher/README.md#112-create-the-source-file-page_facing_up)
+  - [1.1.3 Create the Executable](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#113-create-the-executable-gear)
+  - [1.1.4 Create Configuration Files](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#114-edit-the-configuration-files-hammer_and_wrench)
+  - [1.1.5 Compiling & Running the Package](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#115-compiling--running-the-package-computer)
 - [1.2 Creating a Subscriber](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#12-creating-a-subscriber)
-
-
-The `Publisher` and `Subcriber` protocol is analogous to the role of a news agency, or book store. A printing press will publish magazines and/or books that are sent to a store. They are made publically available for people to purchase of their own volition. The type of data being communicated is fast, frequent, and numerous.
-
-<p align="center">
-  <img src="assets/PublisherSubscriberModel.png" width="400" height="auto" alt="Publisher/Subscriber Model."/>
-  <br>
-  <em>Figure 1: Publishers make data publicly available for any number of subscribers.</em>
-</p>
 
 The folder structure for our package will look like this:
 ```
@@ -24,13 +20,13 @@ ros2_workspace/
 ├─ src/
     └── tutorial_ros2/
         ├─ include/
-            ├─  HaikuPublisher.h
-            └── HaikuSubscriber.h
+        |   ├─  HaikuPublisher.h
+        |   └── HaikuSubscriber.h
         ├─ src/
-            ├─  HaikuPublisher.cpp
-            ├─  HaikuSubscriber.cpp
-            ├─  publisher.cpp
-            └── subscriber.cpp
+        |   ├─  HaikuPublisher.cpp
+        |   ├─  HaikuSubscriber.cpp
+        |   ├─  publisher.cpp
+        |   └── subscriber.cpp
         ├── CMakeLists.txt
         └── package.xml
 ```
@@ -83,6 +79,8 @@ The significant lines of code to consider are:
 - `rclcpp::TimerBase::SharedPtr _timer`: This is used to regulate how often we publish messages.
 - `rclcpp::Publisher<std_msgs::msg::String>::SharedPtr _publisher`: This object is directly responsible for publishing our message over the ROS2 network.
 - `void timer_callback();` This will be combined with the `_timer` and perform the core work for this class.
+
+[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
 ### 1.1.2 Create the Source File :page_facing_up:
 
@@ -215,7 +213,9 @@ executor.spin();
 ```
 Each publisher can run using its own unique parameters. It also means we can attached _different_ classes to the executor (other publishers, services, action servers, etc.).
 
-### 1.1.4 Create Configuration Files :hammer_and_wrench:
+[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+
+### 1.1.4 Edit the Configuration Files :hammer_and_wrench:
 
 #### _The CMake File:_
 
@@ -250,6 +250,8 @@ Inside the `tutorial_ros2/package.xml` file ensure the following lines are prese
 <depend>std_msgs</depend>
 ```
 
+[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+
 ### 1.1.5 Compiling & Running the Package :computer:
 
 Navigate back to the root of your ROS2 workspace, e.g. `cd ~/ros2_workspace`, then run:
@@ -260,14 +262,14 @@ Make sure to source the changes, if you haven't already added it to your `bash.r
 ```
 source ./install/setup.bash
 ```
-Now run run:
+Now run:
 ```
 ros2 run tutorial_ros2 publisher
 ```
 <p align="center">
   <img src="doc/publisher.png" width="800" height="auto" alt="Haiku publisher node."/>
   <br>
-  <em> Figure 2: Running the Haiku publisher node.</em>
+  <em> Figure 1: Running the Haiku publisher node.</em>
 </p>
 
 #### Checking the Output :eyes:
@@ -282,9 +284,9 @@ ros2 topic list
 ```
 
 <p align="center">
-  <img src="doc/publisher_node_topic_list.png" width="500" height="auto" alt="Node and topic list."/>
+  <img src="doc/publisher_node_topic_list.png" width="400" height="auto" alt="Node and topic list."/>
   <br>
-  <em>Figure 3: Listing the ROS2 nodes and topics.</em>
+  <em>Figure 2: Listing the ROS2 nodes and topics.</em>
 </p>
   
 Notice that the names matche the ones we assigned when we created the publisher object inside the `publisher.cpp` file:
@@ -294,9 +296,9 @@ auto haikuPublisher = std::make_shared<HaikuPublisher>("haiku_publisher", "haiku
 We can check the output of the `/haiku` topic using `ros2 topic echo /haiku`:
 
 <p align="center">
-  <img src="doc/publisher_node_topic_list.png" width="500" height="auto" alt="Echoing the haiku topic."/>
+  <img src="doc/topic_echo_haiku.png" width="450" height="auto" alt="Echoing the haiku topic."/>
   <br>
-  <em>Figure 4: Echoing the `/haiku` topic will print the output to the console.</em>
+  <em>Figure 3: Echoing the `/haiku` topic will print the output to the console.</em>
 </p>
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
