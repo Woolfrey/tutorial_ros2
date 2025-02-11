@@ -2,6 +2,8 @@
 
 [🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
 
+This coding tutorial demonstrates how to implement a simple ROS2 pubisher and C++, and a subscriber.
+
 ### Contents:
 - [1.1 Creating a Publisher](#11-creating-a-publisher)
   - [1.1.1 Create the Header File](#111-create-the-header-file-page_facing_up)
