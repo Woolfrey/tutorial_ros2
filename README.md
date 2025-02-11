@@ -3,13 +3,13 @@
 [🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
 
 ### Contents:
-- [1.1 Creating a Publisher](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#11-creating-a-publisher)
-  - [1.1.1 Create the Header File](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#111-create-the-header-file-page_facing_up)
-  - [1.1.2 Create the Source File](https://github.com/Woolfrey/tutorial_ros2/edit/publisher/README.md#112-create-the-source-file-page_facing_up)
-  - [1.1.3 Create the Executable](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#113-create-the-executable-gear)
-  - [1.1.4 Create Configuration Files](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#114-edit-the-configuration-files-hammer_and_wrench)
-  - [1.1.5 Compiling & Running the Package](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#115-compiling--running-the-package-computer)
-- [1.2 Creating a Subscriber](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#12-creating-a-subscriber)
+- [1.1 Creating a Publisher](#11-creating-a-publisher)
+  - [1.1.1 Create the Header File](#111-create-the-header-file-page_facing_up)
+  - [1.1.2 Create the Source File](#112-create-the-source-file-page_facing_up)
+  - [1.1.3 Create the Executable](#113-create-the-executable-gear)
+  - [1.1.4 Create Configuration Files](#114-edit-the-configuration-files-hammer_and_wrench)
+  - [1.1.5 Compiling & Running the Package](#115-compiling--running-the-package-computer)
+- [1.2 Creating a Subscriber](#12-creating-a-subscriber)
 
 The folder structure for our package will look like this:
 ```
