@@ -239,6 +239,11 @@ This says that the `publisher` executable relies on the ROS2 C++ client librarie
 
 #### The package.xml File:
 
+Inside the `tutorial_ros2/package.xml` file ensure the following lines are present:
+```
+<depend>rclcpp</depend>
+<depend>std_msgs</depend>
+```
 
 ### 1.1.5 Compiling & Running the Package :computer:
 
