@@ -15,11 +15,50 @@ The `Publisher` and `Subcriber` protocol is analogous to the role of a news agen
   <em>Figure 1: Publishers make data publicly available for any number of subscribers.</em>
 </p>
 
+Folder structure :file_folder:
+```
+ros2_workspace/src/
+├─ include/
+    ├─  HaikuPublisher.h
+    └── HaikuSubscriber.h
+├─ src/
+    ├─  HaikuPublisher.cpp
+    ├─  HaikuSubscriber.cpp
+    ├─  publisher.cpp
+    └── subscriber.cpp
+├── CMakeLists.txt
+└── package.xml
+```
+
 ## 1.1 Creating a Publisher
+
+### 1.1.1 Create the Header File :page_facing_up:
+
+### 1.1.2 Create the Source File :page_facing_up:
+
+### 1.1.3 Create the Executable :gear:
+
+### 1.1.4 Create Configuration Files :hammer_and_wrench:
+
+### 1.1.5 Compiling & Running the Package :computer:
+
+### 1.1.6 The Code Explained 🔎
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
 ## 1.2 Creating a Subscriber
+
+### 1.2.1 Create the Header File :page_facing_up:
+
+### 1.2.2 Create the Source File :page_facing_up:
+
+### 1.2.3 Create the Executable :gear:
+
+### 1.2.4 Create Configuration Files :hammer_and_wrench:
+
+### 1.2.5 Compiling & Running the Package :computer:
+
+### 1.2.6 The Code Explained 🔎
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
