@@ -3,10 +3,16 @@
 This repository contains a series of coding tutorials based on the 3 communication protocols in ROS2:
 
 1. [Publishers & subscribers](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
-2. Clients & services, and
-3. Action servers & action clients.
+2. Clients & services (still under construction :construction:), and
+3. Action servers & action clients (also under construction :construction:).
 
-These objects are embedded within a `Node` which processes / sends / receives different types of data being sent over the ROS2 network.
+### Contents:
+ - [What Are They?](#what-are-they-thinking)
+ - [Getting Started](#getting-started-checkered_flag)
+
+## What Are They? :thinking:
+
+These classes, clients, and servers are embedded within a `Node` which processes / sends / receives different types of data being sent over the ROS2 network.
 
 <p align="center">
   <img src="assets/NodeInteraction.png" width=250 height="auto" alt="Node interactions."/>
@@ -44,7 +50,49 @@ The `Action Client` and `Action Server` protocol is analogous to requesting tran
 <p align="center">
   <img src="assets/ActionServerModel.png" width="400" height="auto" alt="Action Server Model."/>
   <br>
-  <em>Figure 3: Actions carry out goals over an extended period of time, providing feedback.</em>
+  <em>Figure 4: Actions carry out goals over an extended period of time, providing feedback.</em>
 </p>
+
+[⬆️ Back to top.](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
+
+## Getting Started :checkered_flag:
+
+Make a directory for your ROS2 workspace, for example `ros2_workspace`:
+```
+mkdir ros2_workspace
+```
+Navigate inside of this new folder, and create a `src` directory:
+```
+cd ros2_workspace/ && mkdir src
+```
+Now navigate inside this new folder:
+```
+cd src/
+```
+and create the new package:
+```
+ros2 pkg create --dependencies rclcpp -- tutorial_ros2
+```
+
+<p align="center">
+  <img src="doc/create_package.png" width="600" height="auto" alt="Create ROS2 package."/>
+  <br>
+  <em> Figure 5: Creating a new package for the tutorial in ROS2.</em>
+</p>
+
+The folder structure should look something like this:
+```
+ros2_workspace/
+└── src/
+    ├── include/
+    |    └── tutorial_ros/
+    ├── src/
+    ├── CMakeLists.txt
+    └── package.xml
+```
+The important files for a functional ROS2 package are `CMakeLists.txt` and `package.xml`.
+
+More information can be found in the [official ROS2 tutorial page](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html).
+
 
 [⬆️ Back to top.](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
