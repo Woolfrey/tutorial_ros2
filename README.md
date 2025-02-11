@@ -34,6 +34,50 @@ ros2_workspace/src/
 
 ### 1.1.1 Create the Header File :page_facing_up:
 
+It is good practice in C++ to separate the declarations for functions and classes from the source code. This makes it more efficient for the computer to compile large projects.
+
+ROS2 is also designed around the use of object-oriented programming (OOP). This is useful because we can:
+1. Spawn multiple objects of the same type (e.g. multiple cameras in a single robot system), and
+2. Launch multiple nodes within a single executable.
+
+Inside of `include/HaikuPublisher.h` insert the following code:
+
+```
+#ifndef HAIKU_PUBLISHER_H
+#define HAIKU_PUBLISHER_H
+
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+
+class HaikuPublisher : public rclcpp::Node
+{
+    public:
+
+        HaikuPublisher(const std::string &nodeName = "haiku_publisher",
+                       const std::string &topicName = "haiku",
+                       const int &milliseconds = 2000);
+    private:
+    
+        unsigned int _lineNumber = 1;
+
+        rclcpp::TimerBase::SharedPtr _timer;
+        
+        rclcpp::Publisher<std_msgs::msg::String>::SharedPtr _publisher;
+                
+        void timer_callback();
+};
+
+#endif
+```
+
+The important lines of code to consider here are:
+
+- `#include <rclcpp/rclcpp.hpp>`: The ROS2 C++ client library which provides all the necessary functionality.
+- `class HaikuPublisher : public rclcpp::Node`: Or HaikuPublisher class inherits the ROS2 Node class, and all its functions (methods) and variables (members).
+- `rclcpp::TimerBase::SharedPtr _timer`: This is used to regulate how often we publish messages.
+- `rclcpp::Publisher<std_msgs::msg::String>::SharedPtr _publisher`: This object is directly responsible for publishing our message over the ROS2 network.
+- `void timer_callback();` This will be combined with the `_timer` and perform the core work for this class.
+
 ### 1.1.2 Create the Source File :page_facing_up:
 
 ### 1.1.3 Create the Executable :gear:
