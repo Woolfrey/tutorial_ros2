@@ -80,6 +80,58 @@ The important lines of code to consider here are:
 
 ### 1.1.2 Create the Source File :page_facing_up:
 
+```
+#include <HaikuPublisher.h>
+#include <functional>
+#include <chrono>
+
+HaikuPublisher::HaikuPublisher(const std::string &nodeName,
+                               const std::string &topicName,
+                               const int &milliseconds)
+                               : Node(nodeName)
+{
+    _publisher = this->create_publisher<std_msgs::msg::String>(topicName, 1);
+
+    _timer = this->create_wall_timer(
+        std::chrono::milliseconds(milliseconds),
+        std::bind(&HaikuPublisher::timer_callback, this)
+    );
+    
+    RCLCPP_INFO(this->get_logger(),
+                "Created the '%s' node. Publishing to the '%s' topic name.",
+                nodeName.c_str(), topicName.c_str());
+}
+
+void HaikuPublisher::timer_callback()
+{
+    std_msgs::msg::String message;
+
+    if     (_lineNumber == 1) message.data = "Worker bees can leave.";
+    else if(_lineNumber == 2) message.data = "Even drones can fly away.";
+    else if(_lineNumber == 3) message.data = "The Queen is their slave.";
+    
+    RCLCPP_INFO(this->get_logger(), "Publishing line number %d.", _lineNumber);
+
+    if(_lineNumber < 3) _lineNumber++;
+    else                _lineNumber = 1;
+
+    _publisher->publish(message);
+}
+```
+
+```
+_publisher = this->create_publisher<std_msgs::msg::String>(topicName, 1);
+```
+- `this->` refers to the `rclcpp::Node`, and is attaching the publisher object to it.
+- The `<std_msgs::msg::String>` is a template argument, using a ROS string message type.
+- The `topicName` argument is what will appear to other nodes on the ROS2 network.
+- The `1` argument refers to the queue length for number of messages available at a time.
+
+Any subscribers to this topic will:
+1. Find and connect to the topic via a matching `topicName`, and
+2. Require the same type of message template, in this case the `std_msgs::msg::String`.
+
+
 ### 1.1.3 Create the Executable :gear:
 
 ### 1.1.4 Create Configuration Files :hammer_and_wrench:
