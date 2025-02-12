@@ -1,22 +1,22 @@
-# 1. Publishers & Subscribers
+# Publishers & Subscribers
 
 [🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
 
 This coding tutorial demonstrates how to implement a simple ROS2 pubisher and C++, and a subscriber.
 
 ### Contents:
-- [1.1 Creating a Publisher](#11-creating-a-publisher)
-  - [1.1.1 Create the Header File](#111-create-the-header-file-page_facing_up)
-  - [1.1.2 Create the Source File](#112-create-the-source-file-page_facing_up)
-  - [1.1.3 Create the Executable](#113-create-the-executable-gear)
-  - [1.1.4 Create Configuration Files](#114-edit-the-configuration-files-hammer_and_wrench)
-  - [1.1.5 Compiling & Running the Package](#115-compiling--running-the-package-computer)
-- [1.2 Creating a Subscriber](#12-creating-a-subscriber)
-  - [1.2.1 Create the Header File](#121-create-the-header-file-page_facing_up)
-  - [1.2.2 Create the Source File](#122-create-the-source-file-page_facing_up)
-  - [1.2.3 Create the Executable](#123-create-the-executable-gear)
-  - [1.2.4 Create Configuration Files](#124-edit-the-configuration-files-hammer_and_wrench)
-  - [1.2.5 Compiling & Running the Package](#125-compiling--running-the-package-computer)
+- [1 Creating a Publisher](#1-creating-a-publisher)
+  - [1.1 Create the Header File](#11-create-the-header-file-page_facing_up)
+  - [1.2 Create the Source File](#12-create-the-source-file-page_facing_up)
+  - [1.3 Create the Executable](#13-create-the-executable-gear)
+  - [1.4 Create Configuration Files](#14-edit-the-configuration-files-hammer_and_wrench)
+  - [1.5 Compiling & Running the Package](#15-compiling--running-the-package-computer)
+- [2 Creating a Subscriber](#2-creating-a-subscriber)
+  - [2.1 Create the Header File](#21-create-the-header-file-page_facing_up)
+  - [2.2 Create the Source File](#22-create-the-source-file-page_facing_up)
+  - [2.3 Create the Executable](#23-create-the-executable-gear)
+  - [2.4 Create Configuration Files](#24-edit-the-configuration-files-hammer_and_wrench)
+  - [2.5 Compiling & Running the Package](#25-compiling--running-the-package-computer)
  
 The folder structure for our package will look like this:
 ```
@@ -38,9 +38,9 @@ ros2_workspace/
         └── package.xml
 ```
 
-## 1.1 Creating a Publisher
+## 1. Creating a Publisher
 
-### 1.1.1 Create the Header File :page_facing_up:
+### 1.1 Create the Header File :page_facing_up:
 
 It is good practice in C++ to separate the declarations for functions and classes from the source code. This makes it more efficient for the computer to compile large projects.
 
@@ -89,7 +89,7 @@ The significant lines of code to consider are:
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
-### 1.1.2 Create the Source File :page_facing_up:
+### 1.2 Create the Source File :page_facing_up:
 
 Inside the `src/HaikuPublisher.cpp` insert:
 ```
@@ -166,7 +166,7 @@ Inside the `HaikuPublisher::timer_callback()` method we:
 2. Assign content to the field `message.data = ...`, then
 3. Make this available on the ROS2 network using `_publisher->publish(message)`.
 
-### 1.1.3 Create the Executable :gear:
+### 1.3 Create the Executable :gear:
 
 Now we create a C++ executable that ROS2 will actually run.
 
@@ -222,7 +222,7 @@ Each publisher can run using its own unique parameters. It also means we can att
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
-### 1.1.4 Edit the Configuration Files :hammer_and_wrench:
+### 1.4 Edit the Configuration Files :hammer_and_wrench:
 
 #### _The CMake File:_
 
@@ -267,7 +267,7 @@ Inside the `tutorial_ros2/package.xml` file ensure the following lines are prese
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
-### 1.1.5 Compiling & Running the Package :computer:
+### 1.5 Compiling & Running the Package :computer:
 
 Navigate back to the root of your ROS2 workspace, e.g. `cd ~/ros2_workspace`, then run:
 ```
@@ -318,11 +318,11 @@ We can check the output of the `/haiku` topic using `ros2 topic echo /haiku`:
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
-## 1.2 Creating a Subscriber
+## 2 Creating a Subscriber
 
 A subscriber retrieves data from a known ROS2 topic (provided by a publisher) and processes it to create new, useful outputs. For example, robot arms will publish a `sensor_msgs::msg::JointState` topic containing information on the joint positions and velocities. A robot controller can subscribe to this data to compute the robot kinematics and perform motion planning.
 
-### 1.2.1 Create the Header File :page_facing_up:
+### 2.1 Create the Header File :page_facing_up:
 
 As before, we are going to separate our interface definitions from Create a file `include/HaikuSubscriber.h` and insert the following code:
 ```
@@ -363,7 +363,7 @@ The callback method then takes a `const std_msgs::msg::String::SharedPtr` as an 
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
-### 1.2.2 Create the Source File :page_facing_up:
+### 2.2 Create the Source File :page_facing_up:
 
 In `src/HaikuSubscriber.cpp` we specify the implementation for the constructor, and callback method:
 ```
@@ -440,7 +440,7 @@ There are many other possibilies for what to do with the data. For example, we m
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
-### 1.2.3 Create the Executable :gear:
+### 2.3 Create the Executable :gear:
 
 As before, we create a separate executable in `src/subscriber.cpp`:
 ```
@@ -502,7 +502,7 @@ By running them in separate executables, however, we can make the code more modu
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
-### 1.2.4 Edit the Configuration Files :hammer_and_wrench:
+### 2.4 Edit the Configuration Files :hammer_and_wrench:
 
 We need to update the `CMakeListstxt` file to compile & install the new `subscriber.cpp` executable.
 
@@ -529,7 +529,7 @@ install(TARGETS
 
 [⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
 
-### 1.2.5 Compiling & Running the Package :computer:
+### 2.5 Compiling & Running the Package :computer:
 
 Navigate back to the root directory:
 ```
