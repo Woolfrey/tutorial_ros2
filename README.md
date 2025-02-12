@@ -1,98 +1,105 @@
-# ROS2 C++ Tutorials
+# Action Servers & Action Clients
 
-This repository contains a series of coding tutorials based on the 3 communication protocols in ROS2:
+[🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
 
-- [Publishers & subscribers](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#publishers--subscribers)
-- [Clients & services](https://github.com/Woolfrey/tutorial_ros2/blob/service/README.md#service--client), and
-- Action servers & action clients (also under construction :construction:).
+This coding tutorial demonstrates how to implement a simple ROS2 action server & client.
 
 ### Contents:
- - [What Are They?](#what-are-they-thinking)
- - [Getting Started](#getting-started-checkered_flag)
-
-## What Are They? :thinking:
-
-These classes, clients, and servers are embedded within a `Node` which processes / sends / receives different types of data being sent over the ROS2 network.
-
-<p align="center">
-  <img src="doc/NodeInteraction.png" width=250 height="auto" alt="Node interactions."/>
-  <br>
-  <em>Figure 1: Nodes in ROS2 combine different communication protocols to achieve complex tasks.</em>
-</p>
-
-Any number of these communicators may combined within a `Node` to achieve a desired task. The type of communication method depends on the type of data being transmitted, and how it is expected to be processed:
-
-**_Table 1: Properties of ROS2 Communication Protocols._**
-| Sender | Receiver | Node Interaction | Periodicity | Example(s) |
-|--------|----------|------------------|-------------|------------|
-| Publisher | Subscriber | One ➡️ Many | Frequent | Sensor data, joystick inputs 🕹️ |
-| Client | Service | One ↔️ One| Upon request | Retreiving map updates 🗺️ |
-| (Action) Client | (Action) Server | One ↔️ One | Upon request, with frequent updates. | Moving a robot to a target location :dart: |
-
-The `Publisher` and `Subcriber` protocol is analogous to the role of a news agency, or book store. A printing press will publish magazines and/or books that are sent to a store. They are made publically available for people to purchase of their own volition. The type of data being communicated is fast, frequent, and numerous.
-
-<p align="center">
-  <img src="doc/PublisherSubscriberModel.png" width="400" height="auto" alt="Publisher/Subscriber Model."/>
-  <br>
-  <em>Figure 2: Publishers make data publicly available for any number of subscribers.</em>
-</p>
-
-The `Client` and `Service` protocol is more akin to a postal service. A request is sent by a `Client` directly to a `Server`, who will process said request and send a reponse. The type of data being communicated is fast, infrequent, and sparse.
-
-<p align="center">
-  <img src="doc/ClientServerModel.png" width="300" height="auto" alt="Client/Service Model."/>
-  <br>
-  <em>Figure 3: Clients and services exchange information privately and directly.</em>
-</p>
-
-The `Action Client` and `Action Server` protocol is analogous to requesting transport with Uber. The request is made, a driver confirms the response, and updates are given in real time on how close the driver is to arrival. The interaction is infrequent, like the `Server` & `Client` protocol, but frequent updates are provided like the `Publisher` & `Subscriber`.
-
-<p align="center">
-  <img src="doc/ActionServerModel.png" width="400" height="auto" alt="Action Server Model."/>
-  <br>
-  <em>Figure 4: Actions carry out goals over an extended period of time, providing feedback.</em>
-</p>
-
-[⬆️ Back to top.](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
-
-## Getting Started :checkered_flag:
-
-Make a directory for your ROS2 workspace, for example `ros2_workspace`:
-```
-mkdir ros2_workspace
-```
-Navigate inside of this new folder, and create a `src` directory:
-```
-cd ros2_workspace/ && mkdir src
-```
-Now navigate inside this new folder:
-```
-cd src/
-```
-and create the new package:
-```
-ros2 pkg create --dependencies rclcpp -- tutorial_ros2
-```
-
-<p align="center">
-  <img src="doc/create_package.png" width="600" height="auto" alt="Create ROS2 package."/>
-  <br>
-  <em> Figure 5: Creating a new package for the tutorial in ROS2.</em>
-</p>
-
-The folder structure should look something like this:
+- [1 Defining a Service](#1-defining-an-action)
+  - [1.1 Create the Service File](#11-create-the-action-file-card_index)
+  - [1.2 Edit the Configuration Files](#12-edit-the-configuration-files-hammer_and_wrench)
+  - [1.3 Compile and Inspect the Service](#13-compile--inspect-the-action-computer)
+- [2 Creating a Service](#2-creating-an-action-server)
+  - [2.1 Create the Header File](#21-create-the-header-file-page_facing_up)
+  - [2.2 Create the Source File](#22-create-the-source-file-page_facing_up)
+  - [2.3 Create the Executable](#23-create-the-executable-gear)
+  - [2.4 Edit the Configuration Files](#24-edit-the-configuration-files-hammer_and_wrench)
+  - [2.5 Compiling & Running the Package](#25-compiling--running-the-package-computer)
+- [3 Creating a Client](#3-creating-an-action-client)
+  - [3.1 Create the Header File](31-create-the-header-file-page_facing_up)
+  - [3.2 Create the Source File](#32-create-the-source-file-page_facing_up)
+  - [3.3 Create the Executable](#33-create-the-executable-gear)
+  - [3.4 Edit the Configuration Files](#34-edit-the-configuration-files-hammer_and_wrench)
+  - [3.5 Compiling & Running the Package](#35-compiling--running-the-package-computer)
+ 
+The folder structure for our package will look like this:
 ```
 ros2_workspace/
-└── src/
-    ├── include/
-    |    └── tutorial_ros/
-    ├── src/
-    ├── CMakeLists.txt
-    └── package.xml
+├─ build/
+├─ install/
+├─ log/
+└──src/
+    └── tutorial_ros2/
+        ├─  action/
+        |   └── Haiku.action
+        ├─ include/
+        |   ├─  HaikuActionClient.h
+        |   └── HaikuActionServer.h
+        ├─ src/
+        |   ├─  HaikuActionClient.cpp
+        |   ├─  HaikuActionServer.cpp
+        |   ├─  action_client.cpp
+        |   └── action_server.cpp
+        ├── CMakeLists.txt
+        └── package.xml
 ```
-The important files for a functional ROS2 package are `CMakeLists.txt` and `package.xml`.
 
-More information can be found in the [official ROS2 tutorial page](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html).
+## 1 Defining an Action
 
+### 1.1 Create the Action File :card_index:
 
-[⬆️ Back to top.](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 1.2 Edit the Configuration Files :hammer_and_wrench:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 1.3 Compile & Inspect the Action :computer:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+## 2 Creating an Action Server
+
+### 2.1 Create the Header File :page_facing_up:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 2.2 Create the Source File :page_facing_up:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 2.3 Create the Executable :gear:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 2.4 Edit the Configuration Files :hammer_and_wrench:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 2.5 Compiling & Running the Package :computer:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+## 3 Creating an Action Client
+
+### 3.1 Create the Header File :page_facing_up:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 3.2 Create the Source File :page_facing_up:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 3.3 Create the Executable :gear:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 3.4 Edit the Configuration Files :hammer_and_wrench:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+### 3.5 Compiling & Running the Package :computer:
+
+[:arrow_up: Back to top.](#action-servers--action-clients)
+
+[🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
