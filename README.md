@@ -15,7 +15,7 @@ This coding tutorial demonstrates how to implement a simple ROS2 service in C++,
   - [2.3 Create the Executable](#23-create-the-executable-gear)
   - [2.4 Edit the Configuration Files](#24-edit-the-configuration-files-hammer_and_wrench)
   - [2.5 Compiling & Running the Package](#25-compiling--running-the-package-computer)
-- [3 Creating a Client](#3-creating-a-service)
+- [3 Creating a Client](#3-creating-a-client)
   - [3.1 Create the Header File](31-create-the-header-file-page_facing_up)
   - [3.2 Create the Source File](#32-create-the-source-file-page_facing_up)
   - [3.3 Create the Executable](#33-create-the-executable-gear)
@@ -388,7 +388,9 @@ In another terminal, we can use `ros2 node list` to see that our node is visible
   
 Notice that they have the names that were assigned in the `service.cpp` file: "haiku_service".
 
-## 3 Creating a Service
+[:arrow_up: Back to top.](#service--client)
+
+## 3 Creating a Client
 
 ### 3.1 Create the Header File :page_facing_up:
 
