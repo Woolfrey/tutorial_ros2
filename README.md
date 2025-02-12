@@ -44,7 +44,7 @@ ros2_workspace/
         └── package.xml
 ```
 
-## 1.1 Defining a Service
+## 2.1 Defining a Service
 
 A service is declared using a `.srv` file in ROS2. This tells both the server & client what data is being sent and returned during communication. It is composed of two parts:
 1. A request, which defines what data the client will send, and
@@ -59,7 +59,7 @@ package/Type response
 ```
 Both the request and response fields can be composed of any number of fields and data types.
 
-### 1.1.1. Create the Service File
+### 2.1.1. Create the Service File :page_facing_up:
 
 In `srv/Haiku.srv` we will request the line number, and in return the server will return a `std_msgs::msg::String` object:
 ```
@@ -68,7 +68,7 @@ int64 line_number
 std_msgs/String line
 ```
 
-### 1.1.2 Edit the Configuration Files
+### 1.1.2 Edit the Configuration Files :hammer_and_wrench:
 
 ROS2 will convert the `.srv` service definition in to useable code. We must give it instructions to do so in the `CMakeLists.txt` file:
 ```
@@ -98,7 +98,7 @@ Simultaneously we must modify the `package.xml` file to match:
 <member_of_group>rosidl_interface_packages</member_of_group>
 ```
 
-### 1.2.3 Compile & Inspect the Service
+### 1.2.3 Compile & Inspect the Service :computer:
 
 Navigate to the ROS2 working directory:
 ```
@@ -125,6 +125,14 @@ ros2 interface show tutorial_ros2/srv/Haiku
 ## 1.2 Creating a Service
 
 ### 1.2.1 Create the Header File :page_facing_up:
+
+Next we will create a header file for a `HaikuService` class. ROS2 is designed around oject-oriented programming (OOP). This may seem superfluous, but the advantage is we can easily generate multiple objects, such as services, with unique parameters.
+
+Separating definitions from source code is also good practice in C++. This can improve compile time for large projects.
+
+Create a file in `include/HaikuService.h' and insert the following code:
+```
+
 
 ### 1.2.2 Create the Source File :page_facing_up:
 
