@@ -46,6 +46,23 @@ ros2_workspace/
 
 ## 1 Defining an Action
 
+Communication between an action server and client is defined by a `.action` file:
+```
+package/Type goal
+---
+package/Type result
+---
+package/Type feedback
+```
+It contains three parts:
+1. A goal component providing data about what the server should achieve,
+2. A result component providing data on the outcome of the action, and
+3. Feedback that provides regular updates as the action is executing.
+
+The goal & response function similarly to the client & service protocol, whereas the feedback will quite literally be published like the publisher protocol.
+
+Whilst a service should provide a near-instantaneous response, an action should be used when a request will take several seconds or more to complete.
+
 ### 1.1 Create the Action File :card_index:
 
 [:arrow_up: Back to top.](#action-servers--action-clients)
