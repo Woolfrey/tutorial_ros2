@@ -15,8 +15,7 @@
 /**
  * @brief A class for sending requests to the Haiku service.
  */
-class HaikuClient : public rclcpp::Node,
-                    public std::enable_shared_from_this<HaikuClient>
+class HaikuClient : public rclcpp::Node
 {
     using Haiku = tutorial_ros2::srv::Haiku;                                                        // Makes code a little neater
     
