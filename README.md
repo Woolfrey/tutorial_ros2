@@ -1,26 +1,26 @@
-# 2. Service & Client
+# Service & Client
 
 [🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
 
 This coding tutorial demonstrates how to implement a simple ROS2 service in C++, and a client.
 
 ### Contents:
-- 2.1 Defining a Service
-  - 2.1.1 Create the Service File
-  - 2.1.2 Edit the Configuration Files
-  - 2.1.3 Compile and Inspect the Service
-- 2.2 Creating a Service
-  - 2.2.1 Create the Header File
-  - 2.2.2 Create the Source File
-  - 2.2.3 Create the Executable
-  - 2.2.4 Edit the Configuration Files
-  - 2.2.5 Compiling & Running the Package
-- 2.3 Creating a Client
-  - 2.3.1 Create the Header File
-  - 2.3.2 Create the Source File
-  - 2.3.3 Create the Executable
-  - 2.3.4 Edit the Configuration Files
-  - 2.3.5 Compiling & Running the Package
+- 1 Defining a Service
+  - 1.1 Create the Service File
+  - 1.2 Edit the Configuration Files
+  - 1.3 Compile and Inspect the Service
+- 2 Creating a Service
+  - 2.1 Create the Header File
+  - 2.2 Create the Source File
+  - 2.3 Create the Executable
+  - 2.4 Edit the Configuration Files
+  - 2.5 Compiling & Running the Package
+- 3 Creating a Client
+  - 3.1 Create the Header File
+  - 3.2 Create the Source File
+  - 3.3 Create the Executable
+  - 3.4 Edit the Configuration Files
+  - 3.5 Compiling & Running the Package
  
 The folder structure for our package will look like this:
 ```
@@ -44,7 +44,7 @@ ros2_workspace/
         └── package.xml
 ```
 
-## 2.1 Defining a Service
+## 1 Defining a Service
 
 A service is declared using a `.srv` file in ROS2. This tells both the server & client what data is being sent and returned during communication. It is composed of two parts:
 1. A request, which defines what data the client will send, and
@@ -59,7 +59,7 @@ package/Type response
 ```
 Both the request and response fields can be composed of any number of fields and data types.
 
-### 2.1.1. Create the Service File :card_index:
+### 1.1 Create the Service File :card_index:
 
 In `srv/Haiku.srv` we will request the line number, and in return the server will return a `std_msgs::msg::String` object:
 ```
@@ -68,7 +68,7 @@ int64 line_number
 std_msgs/String line
 ```
 
-### 1.1.2 Edit the Configuration Files :hammer_and_wrench:
+### 1.2 Edit the Configuration Files :hammer_and_wrench:
 
 ROS2 will convert the `.srv` service definition in to useable code. We must give it instructions to do so in the `CMakeLists.txt` file:
 ```
@@ -98,7 +98,7 @@ Simultaneously we must modify the `package.xml` file to match:
 <member_of_group>rosidl_interface_packages</member_of_group>
 ```
 
-### 1.2.3 Compile & Inspect the Service :computer:
+### 1.3 Compile & Inspect the Service :computer:
 
 Navigate to the ROS2 working directory:
 ```
@@ -122,9 +122,9 @@ ros2 interface show tutorial_ros2/srv/Haiku
   <em> Figure 1: We can show the request and response fields of services in ROS2.</em>
 </p>
 
-## 1.2 Creating a Service
+## 2 Creating a Service
 
-### 1.2.1 Create the Header File :page_facing_up:
+### 2.1 Create the Header File :page_facing_up:
 
 Next we will create a header file for a `HaikuService` class. ROS2 is designed around oject-oriented programming (OOP). This may seem superfluous, but the advantage is we can easily generate multiple objects, such as services, with unique parameters.
 
@@ -167,7 +167,7 @@ The important lines of code to consider here are:
 - `rclcpp::Service<Haiku>::SharedPtr _service;`: This object is responsible for advertising the service, and processing requests.
 - `void get_line(...)`: This method is what will process the request.
 
-### 1.2.2 Create the Source File :page_facing_up:
+### 2.2 Create the Source File :page_facing_up:
 
 Now we will elaborate on the constructor and method specified in the header file. Create a file `src/HaikuService.cpp` and insert the following code:
 ```
@@ -250,7 +250,7 @@ Inside the code, we simply check the line number `request->line_number`, and add
 
 Since they are using a `std::shared_ptr` by default, the data is inserted directly at the memory location. There is no need to return any data from the method itself.
 
-### 1.2.3 Create the Executable :gear:
+### 2.3 Create the Executable :gear:
 
 Now we want to create an actual executable to make use of the `HaikuService` class. Create `src/service.cpp` and insert the code:
 ```
@@ -307,27 +307,84 @@ executor.add_node(haikuService1);
 ```
 We could program the class to return _different_ responses using the _same_ interface.
 
-### 1.2.4 Edit the Configuration Files :hammer_and_wrench:
+### 2.4 Edit the Configuration Files :hammer_and_wrench:
 
 Now we need to modify the `CMakeLists.txt` file to build the new executable `service.cpp`. Insert these lines of code near the top of the file:
 ```
 include_directories(include
                     ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp)
 ```
-This tells the compiler to look for the header files in `include/`, and 
+This tells the compiler to look for the header files in `include/`, as well as the location for the custom header file generated when building the `Haiku.srv` file.
 
-### 1.2.5 Compiling & Running the Package :computer:
+We also want to append:
+```
+find_package(${PROJECT_NAME} REQUIRED)
+```
+since the `HaikuService` class is dependent on the `srv` built within this package.
 
-## 1.3 Creating a Service
+Now at the bottom of the file we tell the compiler to build the executable:
+```
+add_executable(service src/service.cpp src/HaikuService.cpp)
+```
+Its name will be `service` and we must list all the source files it is dependent on.
 
-### 1.3.1 Create the Header File :page_facing_up:
+Next we list dependencies for the `service` executable:
+```
+ament_target_dependencies(service
+    rclcpp
+    std_msgs
+    ${PROJECT_NAME}
+)
+```
+It needs:
+- `rclcpp` for the ROS2 C++ client libraries,
+- `std_msgs` for the `std_msgs::msg::String` type, and
+- `${PROJECT_NAME}$` referring to `tutorial_ros` in which the custom `srv` is compiled.
 
-### 1.3.2 Create the Source File :page_facing_up:
+Finally, we tell it to install the executable so ROS2 can find and run it:
+```
+install(TARGETS
+    service
+    DESTINATION lib/${PROJECT_NAME})
+```
 
-### 1.3.3 Create the Executable :gear:
+### 2.5 Compiling & Running the Package :computer:
 
-### 1.3.4 Edit the Configuration Files :hammer_and_wrench:
+Navigate back to the root of `ros2_workspace` and compile:
+```
+colcon build --packages-select tutorial_ros2
+```
+We should now be able to run the service node:
+```
+ros2 run tutorial_ros2 service
+```
 
-### 1.3.5 Compiling & Running the Package :computer:
+<p align="center">
+  <img src="doc/run_service.png" width="700" height="auto" alt="Running the service node."/>
+  <br>
+  <em>Figure 2: The service node is up and running.</em>
+</p>
+
+In another terminal, we can use `ros2 node list` to see that our node is visible on the ROS2 network. We can also see that it is advertising the service with `ros2 service list`.
+
+<p align="center">
+  <img src="doc/node_service_list.png" width="400" height="auto" alt="Inspecting nodes and services."/>
+  <br>
+  <em> Figure 3: Listing the service node and its advertised services.</em>
+</p
+  
+Notice that they have the names that were assigned in the `service.cpp` file: "haiku_service".
+
+## 3 Creating a Service
+
+### 3.1 Create the Header File :page_facing_up:
+
+### 3.2 Create the Source File :page_facing_up:
+
+### 3.3 Create the Executable :gear:
+
+### 3.4 Edit the Configuration Files :hammer_and_wrench:
+
+### 3.5 Compiling & Running the Package :computer:
 
 [🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
