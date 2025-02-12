@@ -2,7 +2,7 @@
 
 This repository contains a series of coding tutorials based on the 3 communication protocols in ROS2:
 
-- [Publishers & subscribers](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+- [Publishers & subscribers](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#publishers--subscribers)
 - Clients & services (still under construction :construction:), and
 - Action servers & action clients (also under construction :construction:).
 
