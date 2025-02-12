@@ -5,22 +5,22 @@
 This coding tutorial demonstrates how to implement a simple ROS2 service in C++, and a client.
 
 ### Contents:
-- 1 Defining a Service
-  - 1.1 Create the Service File
-  - 1.2 Edit the Configuration Files
-  - 1.3 Compile and Inspect the Service
-- 2 Creating a Service
-  - 2.1 Create the Header File
-  - 2.2 Create the Source File
-  - 2.3 Create the Executable
-  - 2.4 Edit the Configuration Files
-  - 2.5 Compiling & Running the Package
-- 3 Creating a Client
-  - 3.1 Create the Header File
-  - 3.2 Create the Source File
-  - 3.3 Create the Executable
-  - 3.4 Edit the Configuration Files
-  - 3.5 Compiling & Running the Package
+- [1 Defining a Service](#1-defining-a-service)
+  - [1.1 Create the Service File](#11-create-the-service-file-card_index)
+  - [1.2 Edit the Configuration Files](#12-edit-the-configuration-files-hammer_and_wrench)
+  - [1.3 Compile and Inspect the Service](#13-compile--inspect-the-service-computer)
+- [2 Creating a Service](#2-creating-a-service)
+  - [2.1 Create the Header File](#21-create-the-header-file-page_facing_up)
+  - [2.2 Create the Source File](#22-create-the-source-file-page_facing_up)
+  - [2.3 Create the Executable](#23-create-the-executable-gear)
+  - [2.4 Edit the Configuration Files](#24-edit-the-configuration-files-hammer_and_wrench)
+  - [2.5 Compiling & Running the Package](#25-compiling--running-the-package-computer)
+- [3 Creating a Client](#3-creating-a-service)
+  - [3.1 Create the Header File](31-create-the-header-file-page_facing_up)
+  - [3.2 Create the Source File](#32-create-the-source-file-page_facing_up)
+  - [3.3 Create the Executable](#33-create-the-executable-gear)
+  - [3.4 Edit the Configuration Files](#34-edit-the-configuration-files-hammer_and_wrench)
+  - [3.5 Compiling & Running the Package](#35-compiling--running-the-package-computer)
  
 The folder structure for our package will look like this:
 ```
@@ -67,6 +67,7 @@ int64 line_number
 ---
 std_msgs/String line
 ```
+[:arrow_up: Back to top.](#service--client)
 
 ### 1.2 Edit the Configuration Files :hammer_and_wrench:
 
@@ -98,6 +99,8 @@ Simultaneously we must modify the `package.xml` file to match:
 <member_of_group>rosidl_interface_packages</member_of_group>
 ```
 
+[:arrow_up: Back to top.](#service--client)
+
 ### 1.3 Compile & Inspect the Service :computer:
 
 Navigate to the ROS2 working directory:
@@ -121,6 +124,8 @@ ros2 interface show tutorial_ros2/srv/Haiku
   <br>
   <em> Figure 1: We can show the request and response fields of services in ROS2.</em>
 </p>
+
+[:arrow_up: Back to top.](#service--client)
 
 ## 2 Creating a Service
 
@@ -166,6 +171,8 @@ The important lines of code to consider here are:
 - `using Haiku = tutorial_ros2::srv::Haiku;`: This is just to make the code easier to read.
 - `rclcpp::Service<Haiku>::SharedPtr _service;`: This object is responsible for advertising the service, and processing requests.
 - `void get_line(...)`: This method is what will process the request.
+
+[:arrow_up: Back to top.](#service--client)
 
 ### 2.2 Create the Source File :page_facing_up:
 
@@ -250,6 +257,8 @@ Inside the code, we simply check the line number `request->line_number`, and add
 
 Since they are using a `std::shared_ptr` by default, the data is inserted directly at the memory location. There is no need to return any data from the method itself.
 
+[:arrow_up: Back to top.](#service--client)
+
 ### 2.3 Create the Executable :gear:
 
 Now we want to create an actual executable to make use of the `HaikuService` class. Create `src/service.cpp` and insert the code:
@@ -307,6 +316,8 @@ executor.add_node(haikuService1);
 ```
 We could program the class to return _different_ responses using the _same_ interface.
 
+[:arrow_up: Back to top.](#service--client)
+
 ### 2.4 Edit the Configuration Files :hammer_and_wrench:
 
 Now we need to modify the `CMakeLists.txt` file to build the new executable `service.cpp`. Insert these lines of code near the top of the file:
@@ -348,6 +359,8 @@ install(TARGETS
     DESTINATION lib/${PROJECT_NAME})
 ```
 
+[:arrow_up: Back to top.](#service--client)
+
 ### 2.5 Compiling & Running the Package :computer:
 
 Navigate back to the root of `ros2_workspace` and compile:
@@ -379,12 +392,290 @@ Notice that they have the names that were assigned in the `service.cpp` file: "h
 
 ### 3.1 Create the Header File :page_facing_up:
 
+As before, we will separate definitions for the class from its implementation.
+
+Create the file `include/HaikuClient.h` and insert the following code:
+```
+#ifndef HAIKU_CLIENT_H
+#define HAIKU_CLIENT_H
+
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+#include "tutorial_ros2/srv/haiku.hpp"
+
+class HaikuClient : public rclcpp::Node
+{
+    using Haiku = tutorial_ros2::srv::Haiku;
+    
+    public:
+
+        HaikuClient(const std::string &nodeName    = "haiku_client",
+                    const std::string &serviceName = "haiku_service");
+    
+    private:
+
+        rclcpp::Client<Haiku>::SharedPtr _client;
+
+        void get_user_input();
+
+        void send_request(const int &lineNumber);
+
+        void process_response(rclcpp::Client<tutorial_ros2::srv::Haiku>::SharedFuture future);
+    
+};
+#endif
+```
+
+#### Inspecting the Code :mag:
+
+Here are the important lines of code to consider:
+- `class HaikuClient : public rclcpp::Node` This class will build on & inherit all the features of a ROS2 node,
+- `using Haiku = tutorial_ros2::srv::Haiku` Used to make proceeding code shorter
+- `rclcpp::Client<Haiku>::SharedPtr _client` This object is responsible for communicating with the server node.
+
+There are 3 methods unique to this class that will run in sequence:
+1. `get_user_input()` to retrieve a command from the terminal, which will then call:
+2. `send_request()` which does as you'd expect, then
+3. `process_response()` which will retrieve the answer from the server.
+
+[:arrow_up: Back to top.](#service--client)
+
 ### 3.2 Create the Source File :page_facing_up:
+
+```
+#include <HaikuClient.h>
+#include <thread>
+
+HaikuClient::HaikuClient(const std::string &nodeName,
+                         const std::string &serviceName)
+                         : Node(nodeName)
+{
+    _client = this->create_client<tutorial_ros2::srv::Haiku>(serviceName);
+
+    RCLCPP_INFO(this->get_logger(), "Waiting for `%s` service to be advertised...", serviceName.c_str());
+
+    auto startTime = std::chrono::steady_clock::now();
+
+    while (not _client->wait_for_service(std::chrono::milliseconds(500)))
+    {
+        if (not rclcpp::ok())
+        {
+            RCLCPP_ERROR(this->get_logger(), "Client interrupted while waiting for service. Exiting...");
+            
+            return;
+        }
+
+        if (std::chrono::steady_clock::now() - startTime > std::chrono::seconds(5))
+        {
+            RCLCPP_ERROR(this->get_logger(), "Service `%s` not available after 5 seconds. Shutting down...", serviceName.c_str());
+            
+            rclcpp::shutdown();
+            
+            return;
+        }
+    }  
+    
+    std::thread(&HaikuClient::get_user_input, this).detach();
+}
+
+void HaikuClient::get_user_input()
+{
+    int userInput;
+
+    while (rclcpp::ok())
+    {
+        RCLCPP_INFO(this->get_logger(), "Please enter a number (1, 2, or 3):");
+        
+        std::cin >> userInput;
+
+        if (std::cin.fail()) 
+        {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            RCLCPP_WARN(this->get_logger(), "Invalid input.");
+            continue;
+        }
+
+        if (userInput == 1 or userInput == 2 or userInput == 3)
+        {
+            send_request(userInput);
+        }
+        else
+        {
+            RCLCPP_WARN(this->get_logger(), "Number must be between 1 and 3.");
+        }
+    }
+}
+
+void HaikuClient::send_request(const int &lineNumber)
+{
+    auto request = std::make_shared<tutorial_ros2::srv::Haiku::Request>();
+    
+    request->line_number = lineNumber;
+
+    auto future = _client->async_send_request(request,
+                                              std::bind(&HaikuClient::process_response, this, std::placeholders::_1));
+}
+
+void HaikuClient::process_response(rclcpp::Client<tutorial_ros2::srv::Haiku>::SharedFuture future)
+{
+    auto response = future.get();
+
+    if (response)
+    {
+        RCLCPP_INFO(this->get_logger(), "%s", response->line.data.c_str());
+    }
+    else
+    {
+        RCLCPP_ERROR(this->get_logger(), "Service request failed.");
+    }
+}
+```
+
+#### Inspecting the Code :mag:
+
+##### **_The Constructor:**
+Inside the constructor we create the client object:
+```
+    _client = this->create_client<tutorial_ros2::srv::Haiku>(serviceName);
+```
+Its components are:
+1. `this->` referring to the `rclcpp::Node` that was inherited,
+2. A template parameter of the service type `tutorial_ros2::srv::Haiku`, and
+3. An argument for the `serviceName` which _must_ match that advertised by the server.
+
+This loop waits 5 seconds for the service to appear:
+```
+    while (not _client->wait_for_service(std::chrono::milliseconds(500)))
+    {
+      ...
+    }
+```
+This is used to prevent code from proceeding and performing any unsafe actions.
+
+Finally, a separate thread is created:
+```
+std::thread(&HaikuClient::get_user_input, this).detach();
+```
+It links to the `get_user_input()` method and independently executes after `detach()`.
+
+##### **_Get User Input:_**
+
+This method uses `std::cin >> userInput;` to retrieve a character from the terminal that any user types in.
+
+If the input is sound, then it passes it on to the `send_request(userInput)` method.
+
+##### **_Send Request:_**
+
+In this method, we create a temporary object from the request field of `Haiku.srv`:
+```
+auto request = std::make_shared<tutorial_ros2::srv::Haiku::Request>()
+```
+Then we input the line number so it can be sent to the server:
+```
+    request->line_number = lineNumber;                                                              // Add to field
+```
+There are a few things occuring in this line:
+```
+auto future = _client->async_send_request(request, std::bind(&HaikuClient::process_response, this, std::placeholders::_1)); // Bind method below
+```
+First, we send the request to the server. The `async` indicates that the code will continue running while we wait.
+
+The reponse will be put in the `future` return value, and execute the `process_response` method which we have bound to the request.
+
+In other words, it will call `process_request` and input the `future` in to it as an argument.
+
+##### **_Processing the Request:_**
+
+This is very simple. We retrieve the `response` portion of `Haiku.srv` with `future.get()`, then print the results.
+
+[:arrow_up: Back to top.](#service--client)
 
 ### 3.3 Create the Executable :gear:
 
+Again we create a very simple executable in `src/client.cpp`:
+```
+#include <HaikuClient.h>
+ 
+int main(int argc, char *argv[])
+{
+    rclcpp::init(argc, argv);
+    
+    auto haikuClient = std::make_shared<HaikuClient>("haiku_client", "haiku_service");
+
+    rclcpp::executors::SingleThreadedExecutor executor;
+    executor.add_node(haikuClient);
+    executor.spin();
+    
+    rclcpp::shutdown();
+    
+    return 0;
+}
+```
+
+#### Inspecting the Code :mag:
+The basic steps are:
+1. Run ROS2 via `rclcpp::init(argc, argv)`,
+2. Create an instance of our class with `auto haikuClient = std::make_shared<HaikuClient>("haiku_client", "haiku_service")`,
+3. Create an executor and attach the node/class `executor.add_node(haikuClient)`, then
+4. Run it indefinitely: `executor.spin()`.
+
+>[!NOTE]
+> The `nodeName` for the `HaikuClient` constructor is "haiku_client", but the `serviceName` argument is "haiku_service". This _must_ match what is advertised by the service node.
+
+[:arrow_up: Back to top.](#service--client)
+
 ### 3.4 Edit the Configuration Files :hammer_and_wrench:
 
+We need to tell the compiler to create our new executable in `CMakeLists.txt`:
+```
+add_executable(client src/client.cpp src/HaikuClient.cpp)
+```
+We give it the name `client` and list its source files.
+
+Next we need to list its dependencies:
+```
+ament_target_dependencies(client
+                          "rclcpp"
+                          "std_msgs"
+                          ${PROJECT_NAME})
+```
+As before,
+1. ROS2 C++ client libraries,
+2. std_msgs package, and
+3. This project with the custom service header files.
+
+Lastly, we append it to the install list so ROS2 can find it:
+```
+install(TARGETS service
+                client
+        DESTINATION lib/${PROJECT_NAME})
+```
+
+[:arrow_up: Back to top.](#service--client)
+
 ### 3.5 Compiling & Running the Package :computer:
+
+Navigate back to the root of the ROS2 workspace directory and build:
+```
+colcon build --packages-select tutorial_ros2
+```
+First, run the service in one terminal:
+```
+ros2 run tutorial_ros2 service
+```
+Then in a separate terminal you can run the client:
+```
+ros2 run tutorial_ros2 client
+```
+You can freely enter an input to the terminal to see how it works.
+
+<p align="center">
+  <img src="doc/run_client.png" width="700" height="auto" alt="Screenshot of the service & client."/>
+  <br>
+  <em> Figure 4: The client sending a request & receiving a response from the server.</em>
+</p>
+
+[:arrow_up: Back to top.](#service--client)
 
 [🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
