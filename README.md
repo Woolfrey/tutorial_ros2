@@ -67,6 +67,7 @@ int64 line_number
 ---
 std_msgs/String line
 ```
+[:arrow_up: Back to top.](#service--client)
 
 ### 1.2 Edit the Configuration Files :hammer_and_wrench:
 
@@ -98,6 +99,8 @@ Simultaneously we must modify the `package.xml` file to match:
 <member_of_group>rosidl_interface_packages</member_of_group>
 ```
 
+[:arrow_up: Back to top.](#service--client)
+
 ### 1.3 Compile & Inspect the Service :computer:
 
 Navigate to the ROS2 working directory:
@@ -121,6 +124,8 @@ ros2 interface show tutorial_ros2/srv/Haiku
   <br>
   <em> Figure 1: We can show the request and response fields of services in ROS2.</em>
 </p>
+
+[:arrow_up: Back to top.](#service--client)
 
 ## 2 Creating a Service
 
@@ -166,6 +171,8 @@ The important lines of code to consider here are:
 - `using Haiku = tutorial_ros2::srv::Haiku;`: This is just to make the code easier to read.
 - `rclcpp::Service<Haiku>::SharedPtr _service;`: This object is responsible for advertising the service, and processing requests.
 - `void get_line(...)`: This method is what will process the request.
+
+[:arrow_up: Back to top.](#service--client)
 
 ### 2.2 Create the Source File :page_facing_up:
 
@@ -250,6 +257,8 @@ Inside the code, we simply check the line number `request->line_number`, and add
 
 Since they are using a `std::shared_ptr` by default, the data is inserted directly at the memory location. There is no need to return any data from the method itself.
 
+[:arrow_up: Back to top.](#service--client)
+
 ### 2.3 Create the Executable :gear:
 
 Now we want to create an actual executable to make use of the `HaikuService` class. Create `src/service.cpp` and insert the code:
@@ -307,6 +316,8 @@ executor.add_node(haikuService1);
 ```
 We could program the class to return _different_ responses using the _same_ interface.
 
+[:arrow_up: Back to top.](#service--client)
+
 ### 2.4 Edit the Configuration Files :hammer_and_wrench:
 
 Now we need to modify the `CMakeLists.txt` file to build the new executable `service.cpp`. Insert these lines of code near the top of the file:
@@ -347,6 +358,8 @@ install(TARGETS
     service
     DESTINATION lib/${PROJECT_NAME})
 ```
+
+[:arrow_up: Back to top.](#service--client)
 
 ### 2.5 Compiling & Running the Package :computer:
 
@@ -424,6 +437,8 @@ There are 3 methods unique to this class that will run in sequence:
 1. `get_user_input()` to retrieve a command from the terminal, which will then call:
 2. `send_request()` which does as you'd expect, then
 3. `process_response()` which will retrieve the answer from the server.
+
+[:arrow_up: Back to top.](#service--client)
 
 ### 3.2 Create the Source File :page_facing_up:
 
@@ -567,7 +582,7 @@ Then we input the line number so it can be sent to the server:
 ```
     request->line_number = lineNumber;                                                              // Add to field
 ```
-There are a few things going on in this line:
+There are a few things occuring in this line:
 ```
 auto future = _client->async_send_request(request, std::bind(&HaikuClient::process_response, this, std::placeholders::_1)); // Bind method below
 ```
@@ -580,6 +595,8 @@ In other words, it will call `process_request` and input the `future` in to it a
 ##### **_Processing the Request:_**
 
 This is very simple. We retrieve the `response` portion of `Haiku.srv` with `future.get()`, then print the results.
+
+[:arrow_up: Back to top.](#service--client)
 
 ### 3.3 Create the Executable :gear:
 
@@ -613,6 +630,8 @@ The basic steps are:
 >[!NOTE]
 > The `nodeName` for the `HaikuClient` constructor is "haiku_client", but the `serviceName` argument is "haiku_service". This _must_ match what is advertised by the service node.
 
+[:arrow_up: Back to top.](#service--client)
+
 ### 3.4 Edit the Configuration Files :hammer_and_wrench:
 
 We need to tell the compiler to create our new executable in `CMakeLists.txt`:
@@ -640,6 +659,8 @@ install(TARGETS service
         DESTINATION lib/${PROJECT_NAME})
 ```
 
+[:arrow_up: Back to top.](#service--client)
+
 ### 3.5 Compiling & Running the Package :computer:
 
 Navigate back to the root of the ROS2 workspace directory and build:
@@ -662,5 +683,6 @@ You can freely enter an input to the terminal to see how it works.
   <em> Figure 3: The client sending a request & receiving a response from the server.</em>
 </p>
 
+[:arrow_up: Back to top.](#service--client)
 
 [🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
