@@ -443,13 +443,6 @@ There are 3 methods unique to this class that will run in sequence:
 ### 3.2 Create the Source File :page_facing_up:
 
 ```
-/**
- * @file   HaikuClient.cpp
- * @author Jon Woolfrey
- * @data   February 2025
- * @brief  Source code for the HaikuClient class.
- */
-
 #include <HaikuClient.h>
 #include <thread>
 
