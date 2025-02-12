@@ -116,8 +116,8 @@ Now we can check the details of the newly defined service:
 ```
 ros2 interface show tutorial_ros2/srv/Haiku
 ```
-<p align="center"?
-  <img src="doc/interface_show_haiku.png" width="600" height="auto" alt="Show an interface"/>
+<p align="center">
+  <img src="doc/interface_show_haiku.png" width="700" height="auto" alt="Show an interface"/>
   <br>
   <em> Figure 1: We can show the request and response fields of services in ROS2.</em>
 </p>
