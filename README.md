@@ -21,9 +21,9 @@ This coding tutorial demonstrates how to implement a simple ROS2 pubisher and C+
 The folder structure for our package will look like this:
 ```
 ros2_workspace/
-├─ build/
-├─ install/
-├─ log/
+├─  build/
+├─  install/
+├─  log/
 └── src/
     └── tutorial_ros2/
         ├─ include/
