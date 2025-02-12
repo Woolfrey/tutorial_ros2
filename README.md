@@ -678,7 +678,7 @@ ros2 run tutorial_ros2 client
 You can freely enter an input to the terminal to see how it works.
 
 <p align="center">
-  <img src="doc/run_client.png" width="600" height="auto" alt="Screenshot of the service & client."/>
+  <img src="doc/run_client.png" width="700" height="auto" alt="Screenshot of the service & client."/>
   <br>
   <em> Figure 4: The client sending a request & receiving a response from the server.</em>
 </p>
