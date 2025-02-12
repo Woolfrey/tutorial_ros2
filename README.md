@@ -87,7 +87,7 @@ The significant lines of code to consider are:
 - `rclcpp::Publisher<std_msgs::msg::String>::SharedPtr _publisher`: This object is directly responsible for publishing our message over the ROS2 network.
 - `void timer_callback();` This will be combined with the `_timer` and perform the core work for this class.
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+[⬆️ Return to top.](#publishers--subscribers)
 
 ### 1.2 Create the Source File :page_facing_up:
 
@@ -220,7 +220,7 @@ executor.spin();
 ```
 Each publisher can run using its own unique parameters. It also means we can attached _different_ classes to the executor (other publishers, services, action servers, etc.).
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+[⬆️ Return to top.](#publishers--subscribers)
 
 ### 1.4 Edit the Configuration Files :hammer_and_wrench:
 
@@ -265,7 +265,7 @@ Inside the `tutorial_ros2/package.xml` file ensure the following lines are prese
 <depend>std_msgs</depend>
 ```
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+[⬆️ Return to top.](#publishers--subscribers)
 
 ### 1.5 Compiling & Running the Package :computer:
 
@@ -316,7 +316,7 @@ We can check the output of the `/haiku` topic using `ros2 topic echo /haiku`:
   <em>Figure 3: Echoing the `/haiku` topic will print the output to the console.</em>
 </p>
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+[⬆️ Return to top.](#publishers--subscribers)
 
 ## 2 Creating a Subscriber
 
@@ -361,7 +361,7 @@ Note that the subscription has a template argument `<std_msgs::msg::String>`; it
 
 The callback method then takes a `const std_msgs::msg::String::SharedPtr` as an argument. The `const` means that we cannot alter the data in any way; only read it, copy it, etc.
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+[⬆️ Return to top.](#publishers--subscribers)
 
 ### 2.2 Create the Source File :page_facing_up:
 
@@ -438,7 +438,7 @@ The `callback()` method in this case is trivial. It simply prints the received m
 
 There are many other possibilies for what to do with the data. For example, we may do computations on numerical data and then use another publisher to make its output available. Or we may store it within a class member to be utilised at a later time.
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+[⬆️ Return to top.](#publishers--subscribers)
 
 ### 2.3 Create the Executable :gear:
 
@@ -500,7 +500,7 @@ executor.spin();
 ```
 By running them in separate executables, however, we can make the code more modular and independent.
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+[⬆️ Return to top.](#publishers--subscribers)
 
 ### 2.4 Edit the Configuration Files :hammer_and_wrench:
 
@@ -527,7 +527,7 @@ install(TARGETS
 )
 ```
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+[⬆️ Return to top.](#publishers--subscribers)
 
 ### 2.5 Compiling & Running the Package :computer:
 
@@ -555,6 +555,6 @@ ros2 run tutorial_ros2 subscriber
 </p>
 
 
-[⬆️ Return to top.](https://github.com/Woolfrey/tutorial_ros2/blob/publisher/README.md#1-publishers--subscribers)
+[⬆️ Return to top.](#publishers--subscribers)
 
 [🔙 Back to `main`](https://github.com/Woolfrey/tutorial_ros2/blob/main/README.md#ros2-c-tutorials)
