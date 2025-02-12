@@ -24,7 +24,7 @@ ros2_workspace/
 ├─ build/
 ├─ install/
 ├─ log/
-├─ src/
+└── src/
     └── tutorial_ros2/
         ├─ include/
         |   ├─  HaikuPublisher.h
