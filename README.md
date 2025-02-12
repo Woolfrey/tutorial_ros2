@@ -314,9 +314,66 @@ Now we need to modify the `CMakeLists.txt` file to build the new executable `ser
 include_directories(include
                     ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp)
 ```
-This tells the compiler to look for the header files in `include/`, and 
+This tells the compiler to look for the header files in `include/`, as well as the location for the custom header file generated when building the `Haiku.srv` file.
+
+We also want to append:
+```
+find_package(${PROJECT_NAME} REQUIRED)
+```
+since the `HaikuService` class is dependent on the `srv` built within this package.
+
+Now at the bottom of the file we tell the compiler to build the executable:
+```
+add_executable(service src/service.cpp src/HaikuService.cpp)
+```
+Its name will be `service` and we must list all the source files it is dependent on.
+
+Next we list dependencies for the `service` executable:
+```
+ament_target_dependencies(service
+    rclcpp
+    std_msgs
+    ${PROJECT_NAME}
+)
+```
+It needs:
+- `rclcpp` for the ROS2 C++ client libraries,
+- `std_msgs` for the `std_msgs::msg::String` type, and
+- `${PROJECT_NAME}$` referring to `tutorial_ros` in which the custom `srv` is compiled.
+
+Finally, we tell it to install the executable so ROS2 can find and run it:
+```
+install(TARGETS
+    service
+    DESTINATION lib/${PROJECT_NAME})
+```
 
 ### 1.2.5 Compiling & Running the Package :computer:
+
+Navigate back to the root of `ros2_workspace` and compile:
+```
+colcon build --packages-select tutorial_ros2
+```
+We should now be able to run the service node:
+```
+ros2 run tutorial_ros2 service
+```
+
+<p align="center">
+  <img src="doc/run_service.png" width="700" height="auto" alt="Running the service node."/>
+  <br>
+  <em>Figure 2: The service node is up and running.</em>
+</p>
+
+In another terminal, we can use `ros2 node list` to see that our node is visible on the ROS2 network. We can also see that it is advertising the service with `ros2 service list`.
+
+<p align="center">
+  <img src="doc/node_service_list.png" width="400" height="auto" alt="Inspecting nodes and services."/>
+  <br>
+  <em> Figure 3: Listing the service node and its advertised services.</em>
+</p
+  
+Notice that they have the names that were assigned in the `service.cpp` file: "haiku_service".
 
 ## 1.3 Creating a Service
 
