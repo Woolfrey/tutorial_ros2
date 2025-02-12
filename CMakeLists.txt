@@ -34,13 +34,19 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 add_executable(service src/service.cpp src/HaikuService.cpp)
 
 ament_target_dependencies(service
-    rclcpp
-    std_msgs
-    ${PROJECT_NAME}
-)
+                          "rclcpp"
+                          "std_msgs"
+                          ${PROJECT_NAME})
 
-install(TARGETS
-    service
-    DESTINATION lib/${PROJECT_NAME})
+add_executable(client src/client.cpp src/HaikuClient.cpp)
+
+ament_target_dependencies(client
+                          "rclcpp"
+                          "std_msgs"
+                          ${PROJECT_NAME})
+
+install(TARGETS service
+                client
+        DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
