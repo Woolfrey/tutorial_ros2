@@ -5,22 +5,22 @@
 This coding tutorial demonstrates how to implement a simple ROS2 service in C++, and a client.
 
 ### Contents:
-- 1 Defining a Service
-  - 1.1 Create the Service File
-  - 1.2 Edit the Configuration Files
-  - 1.3 Compile and Inspect the Service
-- 2 Creating a Service
-  - 2.1 Create the Header File
-  - 2.2 Create the Source File
-  - 2.3 Create the Executable
-  - 2.4 Edit the Configuration Files
-  - 2.5 Compiling & Running the Package
-- 3 Creating a Client
-  - 3.1 Create the Header File
-  - 3.2 Create the Source File
-  - 3.3 Create the Executable
-  - 3.4 Edit the Configuration Files
-  - 3.5 Compiling & Running the Package
+- [1 Defining a Service](#1-defining-a-service)
+  - [1.1 Create the Service File](#11-create-the-service-file-card_index)
+  - [1.2 Edit the Configuration Files](#12-edit-the-configuration-files-hammer_and_wrench)
+  - [1.3 Compile and Inspect the Service](#13-compile--inspect-the-service-computer)
+- [2 Creating a Service](#2-creating-a-service)
+  - [2.1 Create the Header File](#21-create-the-header-file-page_facing_up)
+  - [2.2 Create the Source File](#22-create-the-source-file-page_facing_up)
+  - [2.3 Create the Executable](#23-create-the-executable-gear)
+  - [2.4 Edit the Configuration Files](#24-edit-the-configuration-files-hammer_and_wrench)
+  - [2.5 Compiling & Running the Package](#25-compiling--running-the-package-computer)
+- [3 Creating a Client](#3-creating-a-service)
+  - [3.1 Create the Header File](31-create-the-header-file-page_facing_up)
+  - [3.2 Create the Source File](#32-create-the-source-file-page_facing_up)
+  - [3.3 Create the Executable](#33-create-the-executable-gear)
+  - [3.4 Edit the Configuration Files](#34-edit-the-configuration-files-hammer_and_wrench)
+  - [3.5 Compiling & Running the Package](#35-compiling--running-the-package-computer)
  
 The folder structure for our package will look like this:
 ```
