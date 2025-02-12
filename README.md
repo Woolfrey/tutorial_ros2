@@ -5,7 +5,7 @@
 This coding tutorial demonstrates how to implement a simple ROS2 service in C++, and a client.
 
 ### Contents:
-- 2.1 Defining a Service
+
 - 2.2 Creating a Service
   - 2.2.1 Create the Header File
   - 2.2.2 Create the Source File
@@ -43,6 +43,49 @@ ros2_workspace/
 
 ## 1.1 Defining a Service
 
+```
+package/Type request
+---
+package/Type response
+```
+
+In `srv/Haiku.srv' we will request the line number, and in return the server will return a string:
+```
+int64 line_number
+---
+std_msgs/String line
+```
+
+Modify the `CMakeLists.txt` file:
+```
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+                           "srv/Haiku.srv")
+```
+
+Modify the `package.xml` file:
+```
+<build_depend>rosidl_default_generators</build_depend>
+
+<exec_depend>rosidl_default_runtime</exec_depend>
+
+<member_of_group>rosidl_interface_packages</member_of_group>
+```
+
+Navigate to the root:
+```
+cd ~/ros2_workspace
+colcon build --packages-select tutorial_ros2
+```
+Source:
+```
+source ./install.setup.bash
+```
+Check:
+```
+ros2 interface show tutorial_ros2/srv/Haiku
+```
 ## 1.2 Creating a Service
 
 ### 1.2.1 Create the Header File :page_facing_up:
