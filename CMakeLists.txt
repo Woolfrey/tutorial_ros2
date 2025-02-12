@@ -8,26 +8,39 @@ endif()
 ####################################################################################################
 #                                         DEPENDENCIES                                             #
 ####################################################################################################
+
+include_directories(include
+                    ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp)
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(${PROJECT_NAME} REQUIRED)
 
-if(BUILD_TESTING)
-     find_package(ament_lint_auto REQUIRED)
+####################################################################################################
+#                                    GENERATE SERVICE INTERFACES                                   #
+####################################################################################################
 
-     set(ament_cmake_copyright_FOUND TRUE)
-
-     set(ament_cmake_cpplint_FOUND TRUE)
-     ament_lint_auto_find_test_dependencies()
-endif()
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/Haiku.srv"
+  DEPENDENCIES std_msgs
+)
 
 ####################################################################################################
 #                                          EXECUTABLES                                             #
 ####################################################################################################
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-                           "srv/Haiku.srv"
-                           DEPENDENCIES std_msgs)
+add_executable(service src/service.cpp src/HaikuService.cpp)
+
+ament_target_dependencies(service
+    rclcpp
+    std_msgs
+    ${PROJECT_NAME}
+)
+
+install(TARGETS
+    service
+    DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
