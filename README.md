@@ -8,7 +8,7 @@ This coding tutorial demonstrates how to implement a simple ROS2 action server &
 - [1 Defining an Action](#1-defining-an-action)
   - [1.1 Create the Action File](#11-create-the-action-file-card_index)
   - [1.2 Edit the Configuration Files](#12-edit-the-configuration-files-hammer_and_wrench)
-  - [1.3 Compile and Inspect the Service](#13-compile--inspect-the-action-computer)
+  - [1.3 Compile and Inspect the Action](#13-compile--inspect-the-action-computer)
 - [2 Creating an Action Server](#2-creating-an-action-server)
   - [2.1 Create the Header File](#21-create-the-header-file-page_facing_up)
   - [2.2 Create the Source File](#22-create-the-source-file-page_facing_up)
