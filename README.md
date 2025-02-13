@@ -65,13 +65,67 @@ Whilst a service should provide a near-instantaneous response, an action should 
 
 ### 1.1 Create the Action File :card_index:
 
+Create the file `action/Haiku.action` and insert the following code:
+```
+int32 number_of_lines
+---
+std_msgs/String poem
+---
+int32 line_number
+std_msgs/String current_line
+```
+- The goal for the action is to read a given `number_of_lines` of an haiku.
+- The result will be a `std_msgs/String` of the entire number of lines, and
+- The feedback will be the current `line_number` and the `current_line`.
+
+
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ### 1.2 Edit the Configuration Files :hammer_and_wrench:
 
+We need to edit the configuration files so the compiler knows to turn the `.action` definition in to useable code.
+
+First add the following to  `CMakeLists.txt`:
+```
+find_package(std_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+```
+- We need `std_msgs` for the `std_msgs/String` in `Haiku.action`,
+- We need the `rosidl_default_generators` for converting the `.action` in to code.
+
+Now we need to update the `package.xml` file to match. First add these:
+```
+<depend>std_msgs</depend>
+<depend>action_msgs</depend>
+```
+Here we need the additional `action_msgs` not found in the `CMakeLists.txt` file. Then add:
+```
+<build_depend>rosidl_default_generators</build_depend>
+<member_of_group>rosidl_interface_packages</member_of_group>
+```
+
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ### 1.3 Compile & Inspect the Action :computer:
+
+Navigate back to the root of your ROS2 workspace `cd ~/ros2_workspace` then build the package:
+```
+colcon build --packages-select tutorial_ros2
+```
+Make sure to source the changes if you haven't already told `.bashrc` to do so:
+```
+source ./install/setup.bash
+```
+Now we can check that it has compiled correctly with:
+```
+ros2 interface show tutorial_ros2/action/Haiku
+```
+which should print the following:
+<p align="center">
+  <img src="doc/interface_show_action.png" width="600" height="auto" alt="Screenshot of ros2 interface show for Haiku action."/>
+  <br>
+  <em> Figure 1: ROS2 showing the action definition for the Haiku with the goal, result, and feedback fields.</em>
+</p>
 
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
