@@ -67,6 +67,13 @@ int64 line_number
 ---
 std_msgs/String line
 ```
+
+> [!NOTE]
+> A `.srv` file _must_ start with a capital letter.
+
+> [!NOTE]
+> Using `camelCase` naming conventions with a capital letter is forbidden. Only `snake_case` is permitted.
+
 [:arrow_up: Back to top.](#service--client)
 
 ### 1.2 Edit the Configuration Files :hammer_and_wrench:
@@ -444,10 +451,15 @@ There are 3 methods unique to this class that will run in sequence:
 
 ### 3.2 Create the Source File :page_facing_up:
 
+In `src/HaikuClient.cpp` insert the following code at the top:
 ```
 #include <HaikuClient.h>
 #include <thread>
+```
+The `<thread>` library will allow us to execute a service response method independent of the main node.
 
+Next insert the constructor:
+```
 HaikuClient::HaikuClient(const std::string &nodeName,
                          const std::string &serviceName)
                          : Node(nodeName)
@@ -479,7 +491,33 @@ HaikuClient::HaikuClient(const std::string &nodeName,
     
     std::thread(&HaikuClient::get_user_input, this).detach();
 }
+```
+Inside the constructor we create the client object:
+```
+    _client = this->create_client<tutorial_ros2::srv::Haiku>(serviceName);
+```
+Its components are:
+1. `this->` referring to the `rclcpp::Node` that was inherited,
+2. A template parameter of the service type `tutorial_ros2::srv::Haiku`, and
+3. An argument for the `serviceName` which _must_ match that advertised by the server.
 
+This loop waits 5 seconds for the service to appear:
+```
+    while (not _client->wait_for_service(std::chrono::milliseconds(500)))
+    {
+      ...
+    }
+```
+This is used to prevent code from proceeding and performing any unsafe actions.
+
+Finally, a separate thread is created:
+```
+std::thread(&HaikuClient::get_user_input, this).detach();
+```
+It links to the `get_user_input()` method and independently executes after `detach()`.
+
+Next insert the aforementioned method:
+```
 void HaikuClient::get_user_input()
 {
     int userInput;
@@ -508,7 +546,13 @@ void HaikuClient::get_user_input()
         }
     }
 }
+```
+This method uses `std::cin >> userInput;` to retrieve a character from the terminal that any user types in.
 
+If the input is sound, then it passes it on to the `send_request(userInput)` method.
+
+Now put this method in the file:
+```
 void HaikuClient::send_request(const int &lineNumber)
 {
     auto request = std::make_shared<tutorial_ros2::srv::Haiku::Request>();
@@ -518,7 +562,25 @@ void HaikuClient::send_request(const int &lineNumber)
     auto future = _client->async_send_request(request,
                                               std::bind(&HaikuClient::process_response, this, std::placeholders::_1));
 }
-
+```
+Here we create a temporary object from the request field of `Haiku.srv`:
+```
+auto request = std::make_shared<tutorial_ros2::srv::Haiku::Request>()
+```
+Then we input the line number so it can be sent to the server:
+```
+request->line_number = lineNumber;                                                              // Add to field
+```
+There are a few things occuring in this line:
+```
+auto future = _client->async_send_request(request, std::bind(&HaikuClient::process_response, this, std::placeholders::_1)); // Bind method below
+```
+- We send the request to the server, using `async` so the code will continue to run while we wait.
+- The response is put in the `future` return value, and
+- The `process_response` method is bound to the return value which is input as an argument and executed.
+  
+Lastly, input the response processing method:
+```
 void HaikuClient::process_response(rclcpp::Client<tutorial_ros2::srv::Haiku>::SharedFuture future)
 {
     auto response = future.get();
@@ -533,61 +595,6 @@ void HaikuClient::process_response(rclcpp::Client<tutorial_ros2::srv::Haiku>::Sh
     }
 }
 ```
-
-#### Inspecting the Code :mag:
-
-##### **_The Constructor:**
-Inside the constructor we create the client object:
-```
-    _client = this->create_client<tutorial_ros2::srv::Haiku>(serviceName);
-```
-Its components are:
-1. `this->` referring to the `rclcpp::Node` that was inherited,
-2. A template parameter of the service type `tutorial_ros2::srv::Haiku`, and
-3. An argument for the `serviceName` which _must_ match that advertised by the server.
-
-This loop waits 5 seconds for the service to appear:
-```
-    while (not _client->wait_for_service(std::chrono::milliseconds(500)))
-    {
-      ...
-    }
-```
-This is used to prevent code from proceeding and performing any unsafe actions.
-
-Finally, a separate thread is created:
-```
-std::thread(&HaikuClient::get_user_input, this).detach();
-```
-It links to the `get_user_input()` method and independently executes after `detach()`.
-
-##### **_Get User Input:_**
-
-This method uses `std::cin >> userInput;` to retrieve a character from the terminal that any user types in.
-
-If the input is sound, then it passes it on to the `send_request(userInput)` method.
-
-##### **_Send Request:_**
-
-In this method, we create a temporary object from the request field of `Haiku.srv`:
-```
-auto request = std::make_shared<tutorial_ros2::srv::Haiku::Request>()
-```
-Then we input the line number so it can be sent to the server:
-```
-    request->line_number = lineNumber;                                                              // Add to field
-```
-There are a few things occuring in this line:
-```
-auto future = _client->async_send_request(request, std::bind(&HaikuClient::process_response, this, std::placeholders::_1)); // Bind method below
-```
-First, we send the request to the server. The `async` indicates that the code will continue running while we wait.
-
-The reponse will be put in the `future` return value, and execute the `process_response` method which we have bound to the request.
-
-In other words, it will call `process_request` and input the `future` in to it as an argument.
-
-##### **_Processing the Request:_**
 
 This is very simple. We retrieve the `response` portion of `Haiku.srv` with `future.get()`, then print the results.
 
@@ -624,6 +631,26 @@ The basic steps are:
 
 >[!NOTE]
 > The `nodeName` for the `HaikuClient` constructor is "haiku_client", but the `serviceName` argument is "haiku_service". This _must_ match what is advertised by the service node.
+
+Again, creating a separate executable `client.cpp` separate from `HaikuClient.cpp` is superfluous for this simple code example. But this design is advantageous for a few reasons.
+
+For example, we could create both the `HaikuService` and `HaikuClient` in the same executable, and run them simultaneously:
+```
+std::string serviceName = "haiku_service";
+auto haikuService = std::make_shared<HaikuService>("haiku_service", serviceName);
+auto haikuClient = std::make_shared<HaikuClient>("haiku_client", serviceName);
+
+rclcpp::executors::MultiThreadedExecutor executor;
+executor.add_node(haikuService);
+executor.add_node(haikuClient);
+executor.spin();
+```
+With this code we guarantee that:
+1. The client will launch alongside the service so we don't have to check, and
+2. They will use the same name with the `serviceName` variable.
+
+It is also useful for larger packages that require multiple, interdependent nodes.
+
 
 [:arrow_up: Back to top.](#service--client)
 
