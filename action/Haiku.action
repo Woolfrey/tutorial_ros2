@@ -1,0 +1,9 @@
+# Goal
+int32 number_of_lines
+---
+# Result
+std_msgs/String poem
+---
+# Feedback
+int32 line_number
+std_msgs/String current_line
