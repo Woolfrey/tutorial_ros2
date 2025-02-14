@@ -198,13 +198,16 @@ There are also 4 methods:
 
 ### 2.2 Create the Source File :page_facing_up:
 
+#### Insert Headers :headstone:
+
 Now create the `src/HaikuActionServer.cpp` file and insert this line at the top:
 ```
 #include <HaikuActionServer.h>
 ```
 which essentially inserts the header file and class declaration.
 
-Next add the constructor:
+#### Insert the Constructor :building_construction:
+
 ```
 HaikuActionServer::HaikuActionServer(const std::string &nodeName,
                                      const std::string &actionName)
@@ -232,7 +235,8 @@ The lines proceeeding `_actionServer = ...` has many important components:
 3. `actionName` is what will be advertised over the ROS2 network,
 4. Then we use `std::bind` to attach the 3 methods needed to process & run an action.
 
-Next insert this method:
+#### Insert Goal Handling :goal_net:
+
 ```
 rclcpp_action::GoalResponse
 HaikuActionServer::handle_goal(const rclcpp_action::GoalUUID      &uuid,
@@ -271,7 +275,8 @@ if (_activeGoals.find(uuid) != _activeGoals.end())
 }
 ```
 
-Now add the `handle_accepted` method:
+#### Insert Goal Acceptance :open_hands:
+
 ```
 void
 HaikuActionServer::handle_accepted(const std::shared_ptr<HaikuGoalHandle> goalHandle)
@@ -288,7 +293,8 @@ Following the example above, this would be where we add this to the active goal 
 _activeGoals[goalHandle->get_goal_id()] = goalHandle;
 ```
 
-Now add the execute method:
+#### Insert Action Execution :gear:
+
 ```
 void
 HaikuActionServer::execute(const std::shared_ptr<HaikuGoalHandle> goalHandle)
@@ -373,7 +379,8 @@ Two important components:
 
 The lines `rclcpp::Rate loopRate(1);` and `loopRate.sleep()` are used to regulate the timing of the feedback publisher to 1Hz.
 
-Lastly, add the cancel method:
+#### Add Cancellation Method :stop_sign:
+
 ```
 rclcpp_action::CancelResponse
 HaikuActionServer::handle_cancel(const std::shared_ptr<HaikuGoalHandle> goalHandle)
@@ -400,15 +407,131 @@ Or we might use `goalHandle->get_status()` to see if it's an appropriate time to
 
 ### 2.3 Create the Executable :gear:
 
+Create the file `src/action_server.cpp` and insert this code:
+```
+#include <HaikuActionServer.h>
 
+int main(int argc, char* argv[])
+{
+    rclcpp::init(argc, argv);
+    
+    auto haikuActionServer = std::make_shared<HaikuActionServer>("haiku_action_server", "haiku_action");
+    
+    rclcpp::executors::SingleThreadedExecutor executor;
+    executor.add_node(haikuActionServer);
+    executor.spin();
+    
+    rclcpp::shutdown();
+    
+    return 0;  
+}
+```
+We start ROS2 with `rclcpp::init(argc, argv)`.
+
+In this line we:
+```
+auto haikuActionServer = std::make_shared<HaikuActionServer>("haiku_action_server", "haiku_action");
+```
+- We make a shared pointer using to an instance of the class using the template argument `<HaikuActionServer>`,
+- Give it the name `haiku_action_server` that will be seen on the ROS2 network, and
+- Advertise the action as `haiku_action`.
+
+In these 3 lines of code we:
+```
+rclcpp::executors::SingleThreadedExecutor executor;
+executor.add_node(haikuActionServer);
+executor.spin();
+```
+1. Create an executor that will run the nodes,
+2. Attach our action server to it, and
+3. Spin it indefinitely.
+
+The advantage to this approach for code is that we could create _multiple_ action servers and run them simultaneously:
+```
+rclcpp::executors::MultiThreadedExecutor executor;
+executor.add_node(actionServer1);
+executor.add_node(actionServer2);
+executor.add_node(actionServer3);
+executor.spin();
+```
 
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ### 2.4 Edit the Configuration Files :hammer_and_wrench:
 
+Now we need to modify the `CMakeLists.txt` file to tell it to build our new executable. First we need to tell it to include header files:
+```
+include_directories(
+    include
+    ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp)
+```
+The `rosidl_generator_cpp` line is referring to the location for the `tutorial_ros2/action/Haiku.hpp` files that ROS2 creates.
+
+We also need to ensure it can locate the necessary packages:
+```
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
+find_package(${PROJECT_NAME} REQUIRED)
+```
+- `rclcpp` is the ROS2 C++ client libraries,
+- `rclcpp_action` is the associated action libraries, and
+- `${PROJECT_NAME}$` is referring to `tutorial_ros2` where we compiled `Haiku.action`.
+
+Now toward the bottom we add:
+```
+add_executable(action_server src/action_server.cpp src/HaikuActionServer.cpp
+)
+```
+- `action_server` is the name that will appear in the package when we use `ros2 run`, and
+- We list the source files which contain all the necessary code.
+
+Next we list dependencies:
+```
+ament_target_dependencies(action_server
+    "rclcpp"
+    "rclcpp_action"
+    "std_msgs"
+    ${PROJECT_NAME}
+)
+```
+This matches the `find_package` commands higher up in the file.
+
+Now we tell it to install so ROS2 can find it:
+```
+install(TARGETS action_server
+        DESTINATION lib/${PROJECT_NAME})
+```
+
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ### 2.5 Compiling & Running the Package :computer:
+
+Go back to the root of your ROS2 workspace, e.g. `cd ~/ros2_workspace` and compile the project:
+```
+colcon build --packages-select tutorial_ros2
+```
+Make sure to source the code if you haven't modified your `.bashrc` file:
+```
+source ./install/setup.bash
+```
+Now run the action server:
+```
+ros2 run tutoral_ros2 action_server
+```
+
+<p align="center">
+  <img src = "doc/run_action_server.png" width="600" height="auto" alt="Screenshot of the action server running."/>
+  <br>
+  <em> Figure 2: The action server up and running.</em>
+</p>
+
+We can use `ros2 node list` and `ros2 action list` to see that the node exists and the action is advertised publicly:
+
+<p align="center">
+  <img src = "doc/node_action_list.png" width="600" height="auto" alt="Screenshot of node list and action list."/>
+  <br>
+  <em> Figure 3: The node and action can be seen publicly on the ROS2 network.</em>
+</p>
 
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
