@@ -520,7 +520,7 @@ ros2 run tutoral_ros2 action_server
 ```
 
 <p align="center">
-  <img src = "doc/run_action_server.png" width="600" height="auto" alt="Screenshot of the action server running."/>
+  <img src = "doc/run_action_server.png" width="700" height="auto" alt="Screenshot of the action server running."/>
   <br>
   <em> Figure 2: The action server up and running.</em>
 </p>
@@ -528,7 +528,7 @@ ros2 run tutoral_ros2 action_server
 We can use `ros2 node list` and `ros2 action list` to see that the node exists and the action is advertised publicly:
 
 <p align="center">
-  <img src = "doc/node_action_list.png" width="600" height="auto" alt="Screenshot of node list and action list."/>
+  <img src = "doc/node_action_list.png" width="400" height="auto" alt="Screenshot of node list and action list."/>
   <br>
   <em> Figure 3: The node and action can be seen publicly on the ROS2 network.</em>
 </p>
