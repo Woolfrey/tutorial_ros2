@@ -131,17 +131,276 @@ which should print the following:
 
 ## 2 Creating an Action Server
 
-
-
 ### 2.1 Create the Header File :page_facing_up:
+
+It is good practice in C++ to separate the declarations (such as classes, functions, etc.) from the source code. This can improve compile times in large projects.
+
+Create the file `include/HaikuActionServer.h` and insert the following code:
+```
+#ifndef HAIKU_ACTION_SERVER_H
+#define HAIKU_ACTION_SERVER_H
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "std_msgs/msg/string.hpp"
+#include "tutorial_ros2/action/haiku.hpp"
+
+class HaikuActionServer : public rclcpp::Node
+{
+    using Haiku = tutorial_ros2::action::Haiku;
+    using HaikuGoalHandle = rclcpp_action::ServerGoalHandle<Haiku>;
+    
+    public:
+
+        HaikuActionServer(const std::string &nodeName    = "haiku_action_server",
+                          const std::string &serviceName = "haiku_action");
+                          
+    private:
+    
+        rclcpp_action::Server<Haiku>::SharedPtr _actionServer;
+
+        rclcpp_action::GoalResponse
+        handle_goal(const rclcpp_action::GoalUUID      &uuid,
+                    std::shared_ptr<const Haiku::Goal> goal);
+
+        void
+        handle_accepted(const std::shared_ptr<HaikuGoalHandle> goalHandle);
+        
+        void
+        execute(const std::shared_ptr<HaikuGoalHandle> goalHandle);
+
+        rclcpp_action::CancelResponse
+        handle_cancel(const std::shared_ptr<HaikuGoalHandle> goalHandle)
+        {
+             (void)goalHandle;
+             
+             RCLCPP_INFO(rclcpp::get_logger("haiku_action_server"),"Received cancellation request.");
+            
+             return rclcpp_action::CancelResponse::ACCEPT;
+        }
+        
+};
+#endif
+```
+Some of the more important lines of code to consider are:
+- `#include "rclcpp_action/rclcpp_action.h"`: This contains the C++ libraries for ROS2 actions,
+- `#include "tutorial_ros2/action/haiku.hpp"`: This enables us to use `Haiku.action` that we built in the same package,
+- `class HaikuActionServer : public rclcpp::Node`: This class builds upon a ROS2 node along with all its functionality.
+- `rclcpp_action::Server<Haiku>::SharedPtr _actionServer;`: This object is responsible for communicating with a client over ROS2.
+
+There are also 4 methods:
+1. `handle_goal(...)`: This will receive and process a request from an action client,
+2. `handle_accepted(...)`: This is an intermediary method that can be used to prepare the class to execute an action.
+3. `execute(...)`: Is where the action is carried out, and
+4. `handle_cancel(...)`: Will process any cancellation request.
 
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ### 2.2 Create the Source File :page_facing_up:
 
+Now create the `src/HaikuActionServer.cpp` file and insert this line at the top:
+```
+#include <HaikuActionServer.h>
+```
+which essentially inserts the header file and class declaration.
+
+Next add the constructor:
+```
+HaikuActionServer::HaikuActionServer(const std::string &nodeName,
+                                     const std::string &actionName)
+                                     : Node(nodeName)
+{
+    using namespace std::placeholders;
+    
+    _actionServer = rclcpp_action::create_server<tutorial_ros2::action::Haiku>
+    (
+        this,
+        actionName,
+        std::bind(&HaikuActionServer::handle_goal,     this, _1, _2),
+        std::bind(&HaikuActionServer::handle_cancel,   this, _1),
+        std::bind(&HaikuActionServer::handle_accepted, this, _1)
+    );
+    
+    RCLCPP_INFO(this->get_logger(),
+                "Started '%s` action server. Advertising '%s' action.",
+                nodeName.c_str(), actionName.c_str());
+}
+```
+The lines proceeeding `_actionServer = ...` has many important components:
+1. It uses a template argument `<tutorial_ros2::action::Haiku>` which tells it what the goal, result, and feedback data is,
+2. `this` refers to the `rclcpp::Node` inherited by the `HaikuActionServer` class,
+3. `actionName` is what will be advertised over the ROS2 network,
+4. Then we use `std::bind` to attach the 3 methods needed to process & run an action.
+
+Next insert this method:
+```
+rclcpp_action::GoalResponse
+HaikuActionServer::handle_goal(const rclcpp_action::GoalUUID      &uuid,
+                               std::shared_ptr<const Haiku::Goal> goal)
+{
+    (void)uuid;
+    
+    RCLCPP_INFO(this->get_logger(), "Received action request.");
+    
+    if(goal->number_of_lines < 1)
+    {
+        RCLCPP_WARN(this->get_logger(), "Requested number of lines was less than 1.");
+        
+        return rclcpp_action::GoalResponse::REJECT;
+    }
+    else
+    {
+        return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+    }
+}
+```
+This doesn't require much explanation. It checks that the number of lines is a positive integer, and accepts or rejects.
+
+We use `(void)uuid` to stop colcon from issuing a warning when we build. But we could use this for other purposes.
+
+For example, we could add a class member to keep track of active goals:
+```
+std::unordered_map<rclcpp_action::GoalUUID, std::shared_ptr<GoalHandleHaiku>> _activeGoals;
+```
+then check inside this method if it is already running:
+```
+if (_activeGoals.find(uuid) != _activeGoals.end())
+{
+    RCLCPP_WARN(get_logger(), "Duplicate goal received. Rejecting.");
+    return rclcpp_action::GoalResponse::REJECT;
+}
+```
+
+Now add the `handle_accepted` method:
+```
+void
+HaikuActionServer::handle_accepted(const std::shared_ptr<HaikuGoalHandle> goalHandle)
+{
+    std::thread{std::bind(&HaikuActionServer::execute, this, std::placeholders::_1), goalHandle}.detach();
+}
+```
+This immediately generates a separate thread to run the `execute` method, using the `goalHandle` as an argument.
+
+Although it is not used much here, the `handle_accepted` method is where preparations should be made for an action; saving certain parameters, performing necessary calculations, etc.
+
+Following the example above, this would be where we add this to the active goal list:
+```
+_activeGoals[goalHandle->get_goal_id()] = goalHandle;
+```
+
+Now add the execute method:
+```
+void
+HaikuActionServer::execute(const std::shared_ptr<HaikuGoalHandle> goalHandle)
+{
+    RCLCPP_INFO(this->get_logger(), "Reading you a haiku.");
+    
+    Haiku::Feedback::SharedPtr feedback = std::make_shared<Haiku::Feedback>();
+    
+    Haiku::Result::SharedPtr result = std::make_shared<Haiku::Result>();
+    
+    result->poem.data = "\n";
+    
+    rclcpp::Rate loopRate(1);
+    
+    int counter = 1;
+    
+    for(int i = 0; i < goalHandle->get_goal()->number_of_lines and rclcpp::ok(); ++i)
+    {
+        feedback->line_number = i+1;
+        
+        switch(counter)
+        {
+            case 1:
+            {
+                feedback->current_line.data = "Worker bees can leave.\n";
+                break;
+            }
+            case 2:
+            {
+                feedback->current_line.data = "Even drones can fly away.\n";
+                break;
+            }
+            case 3:
+            {
+                feedback->current_line.data = "The Queen is their slave.\n";
+                break;
+            }
+        }
+        
+        result->poem.data += feedback->current_line.data;
+        
+        if(counter < 3) ++counter;
+        else            counter = 1;
+
+        if(goalHandle->is_canceling())
+        {
+            goalHandle->canceled(result);
+            
+            RCLCPP_INFO(this->get_logger(), "Reading cancelled at line %d", i+1);
+        }
+        
+        goalHandle->publish_feedback(feedback);
+        
+        loopRate.sleep();
+    }
+
+    if(rclcpp::ok())
+    {
+        goalHandle->succeed(result);
+
+        RCLCPP_INFO(rclcpp::get_logger("haiku_action_server"), "Finished reading the haiku.");
+    }
+}
+```
+With these 2 lines we create pointers to the `result` and `feedback` portions of the `Haiku.action`:
+```
+Haiku::Feedback::SharedPtr feedback = std::make_shared<Haiku::Feedback>();
+Haiku::Result::SharedPtr result = std::make_shared<Haiku::Result>();
+```
+This allows us to manipulate the data within them.
+
+Inside this loop we simply check the line number and add the appropriate line of the haiku:
+```
+for(int i = 0; i < goalHandle->get_goal()->number_of_lines and rclcpp::ok(); ++i)
+{
+  ...
+}
+```
+Two important components:
+1. We insert updates with `feedback->` and then publish it with `goalHandle->publish_feedback(feedback)`, exactly as a standard publisher would.
+2. We insert the result of the goal with `result->`, and send it back upon completion with `goalHandle->succeed(result)` or `goalHandle->canceled(result)`.
+
+The lines `rclcpp::Rate loopRate(1);` and `loopRate.sleep()` are used to regulate the timing of the feedback publisher to 1Hz.
+
+Lastly, add the cancel method:
+```
+rclcpp_action::CancelResponse
+HaikuActionServer::handle_cancel(const std::shared_ptr<HaikuGoalHandle> goalHandle)
+{
+     (void)goalHandle;
+     
+     RCLCPP_INFO(rclcpp::get_logger("haiku_action_server"),"Received cancellation request.");
+    
+     return rclcpp_action::CancelResponse::ACCEPT;
+}
+```
+This will automatically cancel.
+
+If we were keeping track of multiple goals we could check to see if it exists and respone accordingly:
+```
+if (_activeGoals.find(goalHandle->get_goal_id()) == _activeGoals.end())
+{
+  // Do something appropriate here
+}
+```
+Or we might use `goalHandle->get_status()` to see if it's an appropriate time to interrupt the action.
+
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ### 2.3 Create the Executable :gear:
+
+
 
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
