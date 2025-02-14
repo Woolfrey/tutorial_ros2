@@ -533,6 +533,8 @@ We can use `ros2 node list` and `ros2 action list` to see that the node exists a
   <em> Figure 3: The node and action can be seen publicly on the ROS2 network.</em>
 </p>
 
+Note that the names match what we assigned in the constructor arguments in the `action_server.cpp` file.
+
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ## 3 Creating an Action Client
