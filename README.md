@@ -122,7 +122,7 @@ ros2 interface show tutorial_ros2/action/Haiku
 ```
 which should print the following:
 <p align="center">
-  <img src="doc/interface_show_action.png" width="600" height="auto" alt="Screenshot of ros2 interface show for Haiku action."/>
+  <img src="doc/interface_show_action.png" width="700" height="auto" alt="Screenshot of ros2 interface show for Haiku action."/>
   <br>
   <em> Figure 1: ROS2 showing the action definition for the Haiku with the goal, result, and feedback fields.</em>
 </p>
@@ -130,6 +130,8 @@ which should print the following:
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ## 2 Creating an Action Server
+
+
 
 ### 2.1 Create the Header File :page_facing_up:
 
