@@ -542,7 +542,7 @@ ros2 topic list --include-hidden-topics
 to actually see it.
 
 <p align="center">
-  <img src="doc/include_hidden_topics" width="600" height="auto" alt="Screenshot of hidden topic list.">
+  <img src="doc/include_hidden_topics.png" width="600" height="auto" alt="Screenshot of hidden topic list.">
   <br>
   <em>Figure 4: Feedback topics from the server are hidden. </em>
 </p>
