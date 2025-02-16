@@ -43,7 +43,21 @@ ament_target_dependencies(action_server
     ${PROJECT_NAME}
 )
 
-install(TARGETS action_server
+add_executable(action_client
+    src/action_client.cpp
+    src/HaikuActionClient.cpp
+)
+
+ament_target_dependencies(action_client
+    "rclcpp"
+    "rclcpp_action"
+    "std_msgs"
+    ${PROJECT_NAME}
+)
+
+install(TARGETS
+        action_server
+        action_client
         DESTINATION lib/${PROJECT_NAME})
         
 ament_package()
