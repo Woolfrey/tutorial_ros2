@@ -539,11 +539,324 @@ Note that the names match what we assigned in the constructor arguments in the `
 
 ## 3 Creating an Action Client
 
+The client is responsible for generating & coordinating goals. Action servers denote discrete tasks to be achieved, and the client should be used to coordinate them to achieve more sophisticated, multi-task objectives.
+
 ### 3.1 Create the Header File :page_facing_up:
+
+As before, we are going to separate the declaration for our class from the actual source code. Create `include/HaikuActionClient.h` and insert the following code:
+```
+#ifndef HAIKU_ACTION_CLIENT_H
+#define HAIKU_ACTION_CLIENT_H
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "std_msgs/msg/string.hpp"
+#include "tutorial_ros2/action/haiku.hpp"
+
+class HaikuActionClient : public rclcpp::Node
+{
+    using GoalStatus = action_msgs::msg::GoalStatus;
+    using Haiku = tutorial_ros2::action::Haiku;
+    using HaikuGoalHandle = rclcpp_action::ClientGoalHandle<Haiku>;
+    
+    public:
+
+        HaikuActionClient(const std::string &nodeName   = "haiku_action_client",
+                          const std::string &actionName = "haiku_action");
+
+    private:
+
+        rclcpp_action::Client<Haiku>::SendGoalOptions _sendGoalOptions;
+            
+        rclcpp_action::Client<Haiku>::SharedPtr _actionClient;
+        
+        std::shared_ptr<HaikuGoalHandle> _activeGoalHandle;
+        
+        void
+        get_user_input();
+        
+        void
+        goal_response_callback(std::shared_ptr<HaikuGoalHandle> goalHandle);
+
+        void
+        feedback_callback(std::shared_ptr<HaikuGoalHandle> goalHandle,
+                          std::shared_ptr<const Haiku::Feedback> feedback);
+ 
+        void
+        result_callback(const HaikuGoalHandle::WrappedResult &result);     
+};
+#endif
+```
+The important lines of code to consider are:
+- `#include "tutorial_ros2/action/haiku.hpp"`: This allows us to actually use the code generated from the `Haiku.action` file.
+- `class HaikuActionClient : public rclcpp::Node` Our server class will build upon a ROS2 node, using all its functionality.
+- `rclcpp_action::Client<Haiku>::SendGoalOptions _sendGoalOptions;` This object will be used to bind the methods and callback functions for interacting with the server,
+- `rclcpp_action::Client<Haiku>::SharedPtr _actionClient;` This is the object responsible for coordinating communicating with the server,
+- `std::shared_ptr<HaikuGoalHandle> _activeGoalHandle;` This object is used to keep track of a goal that is being executed.
+- `get_user_input()` will be the main method that runs inside this class.
+
+Then we have 3 callback methods:
+1. `goal_response_callback()` will receive the answer from the server when a goal is sent.
+2. `feedback_callback()` is optional, but it will subscribe to the feedback topic from the server.
+3. `result_callback()` gets the final message from the server when the action ends.
 
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ### 3.2 Create the Source File :page_facing_up:
+
+No in `src/HaikuActionClient.cpp` we can elaborate on all the methods.
+
+First put `#include "HaikuActionClient.h"` at the top. Then insert the following methods:
+
+#### The Constructor :building_construction:
+
+```
+HaikuActionClient::HaikuActionClient(const std::string &nodeName,
+                                     const std::string &actionName)
+                                     : Node(nodeName)
+{
+    _actionClient = rclcpp_action::create_client<Haiku>(this,actionName);
+
+    RCLCPP_INFO(this->get_logger(), "Waiting for `%s` action to be advertised...", actionName.c_str());
+    
+    if(not _actionClient->wait_for_action_server(std::chrono::seconds(5)))
+    {
+        RCLCPP_ERROR(this->get_logger(), "Waited 5 seconds and found nothing. Shutting down");
+        
+        rclcpp::shutdown();
+    }
+    
+    using namespace std::placeholders;
+    
+    _sendGoalOptions = rclcpp_action::Client<Haiku>::SendGoalOptions();
+    _sendGoalOptions.result_callback = std::bind(&HaikuActionClient::result_callback, this, _1);
+    _sendGoalOptions.feedback_callback = std::bind(&HaikuActionClient::feedback_callback, this, _1, _2);
+    _sendGoalOptions.goal_response_callback = std::bind(&HaikuActionClient::goal_response_callback, this, _1);
+              
+    std::thread(&HaikuActionClient::get_user_input, this).detach();
+}
+```
+In the constructor we first create an instance of the client:
+```
+_actionClient = rclcpp_action::create_client<Haiku>(this,actionName);
+```
+It takes:
+1. The template argument `<Haiku>` (really `tutorial_ros2::action::Haiku`),
+2. Using `this` node which it attaches to, and
+3. The `actionName` we expect to be advertised by the server.
+
+To prevent error, we wait for the action to be advertised:
+```
+if(not _actionClient->wait_for_action_server(std::chrono::seconds(5)))
+{
+  ...
+}
+```
+Here we create an object for storing options:
+```
+_sendGoalOptions = rclcpp_action::Client<Haiku>::SendGoalOptions();
+```
+In the proceeding lines, we attach the feedback, result, and goal response methods. This ensures they are automatically executed when the server sends back information.
+
+Lastly, we generate a thread that will run the `get_user_input()` method indefinitely:
+```
+std::thread(&HaikuActionClient::get_user_input, this).detach();
+```
+
+#### Get User Input 🤲
+
+```
+void
+HaikuActionClient::get_user_input()
+{
+    RCLCPP_INFO(this->get_logger(), "Please enter a number > 0, or hit Enter to cancel.");
+    
+    while(rclcpp::ok())
+    {
+        std::string userInput;
+        
+        std::getline(std::cin, userInput);
+        
+        uint8_t status = (_activeGoalHandle == nullptr) ? 0 : _activeGoalHandle->get_status();
+
+        if (userInput.empty())
+        {   
+            if (_activeGoalHandle == nullptr
+            or  status == GoalStatus::STATUS_ABORTED
+            or  status == GoalStatus::STATUS_CANCELED
+            or  status == GoalStatus::STATUS_SUCCEEDED)
+            {
+                RCLCPP_INFO(this->get_logger(), "No action currently running.");
+            }
+            else if (status == GoalStatus::STATUS_CANCELING)
+            {
+                RCLCPP_INFO(this->get_logger(), "Action canceling. Please be patient.");
+            }
+            else // ACCEPTED, EXECUTING, UNKNOWN
+            {
+                _actionClient->async_cancel_goal(_activeGoalHandle);
+            }
+        }
+        else
+        {
+            int numberOfLines;
+            
+            // If input is not an integer, std::stoi will throw a runtime error
+            // so we need to catch it here.
+            try
+            {
+                numberOfLines = std::stoi(userInput);
+            }
+            catch(const std::exception &exception)
+            {
+                RCLCPP_WARN(this->get_logger(), "Invalid argument.");
+                
+                continue;
+            }
+               
+            if (numberOfLines > 0)
+            {
+                if (status == GoalStatus::STATUS_ABORTED
+                or  status == GoalStatus::STATUS_CANCELED
+                or  status == GoalStatus::STATUS_SUCCEEDED
+                or  status == GoalStatus::STATUS_UNKNOWN)
+                {
+                    auto goal = Haiku::Goal();
+                    
+                    goal.number_of_lines = numberOfLines;
+                    
+                    _actionClient->async_send_goal(goal, _sendGoalOptions);
+                }
+                else if(status == GoalStatus::STATUS_ACCEPTED
+                     or status == GoalStatus::STATUS_EXECUTING)
+                {
+                    RCLCPP_WARN(this->get_logger(), "Another action is currently running.");
+                }
+                else                                                                                // CANCELING
+                {
+                    RCLCPP_INFO(this->get_logger(), "Previous action currently canceling. Please wait.");
+                }
+            }
+            else
+            {
+                RCLCPP_WARN(this->get_logger(), "Argument must be a positive integer.");
+            }
+        }
+    }
+}
+```
+This method is quite lengthy, but it bridges the user input (you) with the server itself.
+
+We can read commands typed in the terminal using:
+```
+`std::getline(std::cin, userInput);`
+```
+We use:
+```
+uint8_t status = (_activeGoalHandle == nullptr) ? 0 : _activeGoalHandle->get_status();
+```
+to check the current state of any action that is running. That way we can tailor the response.
+
+If you simply hit Enter (i.e. empty input), it is (eventually) processed as a cancellation request:
+```
+_actionClient->async_cancel_goal(_activeGoalHandle);
+```
+
+Otherwise, for a valid input, and if the server is not busy, we can send a goal:
+```
+_actionClient->async_send_goal(goal, _sendGoalOptions);
+```
+we attach the goal options that tells it what callback methods to use (we could have unique callbacks for different goals).
+
+#### The Response Callback :leftwards_arrow_with_hook:
+```
+void
+HaikuActionClient::goal_response_callback(std::shared_ptr<HaikuGoalHandle> goalHandle)
+{
+    if(not goalHandle)
+    {
+        RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server.");
+    }
+    else
+    {
+        _activeGoalHandle = goalHandle;
+        
+        RCLCPP_INFO (this->get_logger(), "Goal was accepted by server. Waiting for the result.");
+    }
+}
+```
+When you send a goal to the server, it will decide whether to accept the goal or not. It will then send a response with which we can make further decisions.
+
+If the server has accepted the goal, we keep track of it here by assigning it to our pointer member:
+```
+_activeGoalHandle = goalHandle;
+```
+
+> [!TIP]
+> We could have multiple goals that we could keep track of with, for example, an unordered map:
+> `std::unordered_map<rclcpp_action::GoalUUID, std::shared_ptr<GoalHandleHaiku>> _activeGoals;` and
+> `_activeGoals[goalHandle->get_goal_id()] = goalHandle;`
+
+#### Feedback :back:
+
+```
+void
+HaikuActionClient::feedback_callback(std::shared_ptr<HaikuGoalHandle> goalHandle,
+                                     std::shared_ptr<const Haiku::Feedback> feedback)
+{
+    (void)goalHandle;
+    
+    RCLCPP_INFO(this->get_logger(), "The current line number is %d: %s", feedback->line_number, feedback->current_line.data.c_str());
+}
+```
+
+As the server runs, it will publish feedback to a hidden topic. We can directly subscribe to it here if we choose, and act on any relevant information.
+
+In this method we're only printing the message. We need `(void)goalHandle` to prevent `colcon` from issuing a warning.
+
+> [!TIP]
+> If we are juggling multiple goals can use `goalHandle->get_goal_id()` to search a `std::unordered_map<rclcpp_action::GoalUUID, std::shared_ptr<HaikuGoalHandle>` using the `find(goalHandle->get_goal_id())`.
+
+#### Result :end:
+```
+void
+HaikuActionClient::result_callback(const HaikuGoalHandle::WrappedResult &result)
+{
+    switch (result.code)
+    {
+        case rclcpp_action::ResultCode::SUCCEEDED:
+        {
+            RCLCPP_INFO(this->get_logger(), "Here is the result:\n%s", result.result->poem.data.c_str());
+            break;
+        }
+        case rclcpp_action::ResultCode::ABORTED:
+        {
+            RCLCPP_ERROR(this->get_logger(), "Action was aborted.");
+            break;
+        }
+        case rclcpp_action::ResultCode::CANCELED:
+        {
+            RCLCPP_ERROR(this->get_logger(), "Action was canceled.");
+            break;
+        }
+        default:
+        {
+            RCLCPP_ERROR(this->get_logger(), "Unknown result code (how did that happen?).");
+            break;
+        }
+    }
+    
+    _activeGoalHandle = nullptr;
+    
+    RCLCPP_INFO(this->get_logger(), "Please enter a number > 0, or hit Enter to cancel.");
+}
+```
+When the action is ended (either through cancellation, abortion, or completion), the server will send the result part of the `.action` definition. We receive it here and make use of it as appropriate.
+
+In this specific example, we empty the pointer of the finished goal with:
+```
+_activeGoalHandle = nullptr;
+```
 
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
