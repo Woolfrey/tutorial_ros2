@@ -114,6 +114,8 @@ HaikuActionServer::execute(const std::shared_ptr<HaikuGoalHandle> goalHandle)
             goalHandle->canceled(result);
             
             RCLCPP_INFO(this->get_logger(), "Reading cancelled at line %d", i+1);
+            
+            return;
         }
         
         goalHandle->publish_feedback(feedback);
@@ -128,4 +130,17 @@ HaikuActionServer::execute(const std::shared_ptr<HaikuGoalHandle> goalHandle)
 
         RCLCPP_INFO(rclcpp::get_logger("haiku_action_server"), "Finished reading the haiku.");
     }
+}
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+ //                                  Process a cancel request                                      //
+////////////////////////////////////////////////////////////////////////////////////////////////////
+rclcpp_action::CancelResponse
+HaikuActionServer::handle_cancel(const std::shared_ptr<HaikuGoalHandle> goalHandle)
+{
+     (void)goalHandle;                                                                              // Stops colcon build throwing a warning
+     
+     RCLCPP_INFO(rclcpp::get_logger("haiku_action_server"),"Received cancellation request.");       // Inform user
+    
+     return rclcpp_action::CancelResponse::ACCEPT;
 }
