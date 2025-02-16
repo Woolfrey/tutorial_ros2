@@ -535,6 +535,18 @@ We can use `ros2 node list` and `ros2 action list` to see that the node exists a
 
 Note that the names match what we assigned in the constructor arguments in the `action_server.cpp` file.
 
+The server will advertise the feedback over a _hidden_ topic. We need to use:
+```
+ros2 topic list --include-hidden-topics
+```
+to actually see it.
+
+<p align="center">
+  <img src="doc/include_hidden_topics" width="600" height="auto" alt="Screenshot of hidden topic list.">
+  <br>
+  <em>Figure 4: Feedback topics from the server are hidden. </em>
+</p>
+
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ## 3 Creating an Action Client
@@ -862,13 +874,107 @@ _activeGoalHandle = nullptr;
 
 ### 3.3 Create the Executable :gear:
 
+Now create `src/action_client.cpp` and insert this code:
+```
+#include <HaikuActionClient.h>
+
+int main(int argc, char* argv[])
+{
+    rclcpp::init(argc, argv);
+    
+    auto haikuActionClient = std::make_shared<HaikuActionClient>("haiku_action_client", "haiku_action");
+    
+    rclcpp::executors::SingleThreadedExecutor executor;
+    executor.add_node(haikuActionClient);
+    executor.spin();
+    
+    rclcpp::shutdown();
+    
+    return 0;  
+}
+```
+In this code we start up ROS2 with `rclcpp::init(argc, argv);`.
+
+We then create an instance of our class:
+```
+auto haikuActionClient = std::make_shared<HaikuActionClient>("haiku_action_client", "haiku_action");
+```
+The 2nd argument "haiku_action" must match the name advertised by the server.
+
+Then we make an executor, add our node, and run it:
+```
+rclcpp::executors::SingleThreadedExecutor executor;
+executor.add_node(haikuActionClient);
+executor.spin();
+```
+
+Again, this extra `.cpp` file seems superfluous. We could merge the `HaikuAction.h` and `HaikuAction.cpp` to the top of this file. But having this modular design allows greater flexibility.
+
+We could use an executor to run the server and client simultaneously:
+```
+auto haikuActionClient = std::make_shared<HaikuActionClient>("haiku_action_client", "haiku_action");
+auto haikuActionServer = std::make_shared<HaikuActionServer>("haiku_action_server", "haiku_action");
+
+rclcpp::executors::MultiThreadedExecutor executor;
+executor.add_node(haikuActionServer);
+executor.add_node(haikuActionClient);
+executor.spin();
+```
+This guarantees the server is always available when the client starts up.
+
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ### 3.4 Edit the Configuration Files :hammer_and_wrench:
 
+We need to edit the `CMakeLists.txt` file so ROS2 knows to build the new executable. Near the bottom add:
+```
+add_executable(action_client src/action_client.cpp src/HaikuActionClient.cpp
+)
+```
+We will give it the name `action_client` which will be known to ROS2. We also list all the source files.
+
+Underneath, list the packages that it is dependent on:
+```
+ament_target_dependencies(action_client
+    "rclcpp"
+    "rclcpp_action"
+    "std_msgs"
+    ${PROJECT_NAME}
+)
+```
+The term `${PROJECT_NAME}` refers to `tutorial_ros2` in which we created the `Haiku.action` action.
+
+Now tell the compiler to install it so ROS2 can actually find it:
+```
+install(TARGETS
+        action_server
+        action_client
+        DESTINATION lib/${PROJECT_NAME})
+```
+
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
 ### 3.5 Compiling & Running the Package :computer:
+
+Navigate back to the root of your ROS2 workspace, e.g. `cd ~/ros2_workspace`, then build the package:
+```
+colcon build --packages-select tutorial_ros2
+```
+Don't forget to source the changes if you haven't modified your `.bashrc` file:
+```
+source ./install/setup.bash
+```
+Now you should be able to run the client:
+```
+ros2 run tutorial_ros2 action_client
+```
+
+<p align="center">
+  <img src="doc/run_action_client.png" width="800" height="auto" alt="Screenshot of action client running."/>
+  <br>
+  <em> Figure 5: The action client sending a goal to the action server.</em>
+</p>
+
 
 [:arrow_up: Back to top.](#action-servers--action-clients)
 
