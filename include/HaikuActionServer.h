@@ -28,8 +28,8 @@ class HaikuActionServer : public rclcpp::Node
          * @param nodeName The name of the node that will be seen over ROS2.
          * @param actionName The name that will be advertised over ROS2.
          */
-        HaikuActionServer(const std::string &nodeName    = "haiku_action_server",
-                          const std::string &serviceName = "haiku_action");
+        HaikuActionServer(const std::string &nodeName   = "haiku_action_server",
+                          const std::string &actionName = "haiku_action");
                           
     private:
     
@@ -64,14 +64,7 @@ class HaikuActionServer : public rclcpp::Node
          * @return rclcpp_action::CancelResponse::ACCEPT or REJECT
          */
         rclcpp_action::CancelResponse
-        handle_cancel(const std::shared_ptr<HaikuGoalHandle> goalHandle)
-        {
-             (void)goalHandle;                                                                      // Stops colcon build throwing a warning
-             
-             RCLCPP_INFO(rclcpp::get_logger("haiku_action_server"),"Received cancellation request."); // Inform user
-            
-             return rclcpp_action::CancelResponse::ACCEPT;
-        }
+        handle_cancel(const std::shared_ptr<HaikuGoalHandle> goalHandle);
         
 };                                                                                                  // Semicolon needed after a class declaration.
         
