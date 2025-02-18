@@ -507,7 +507,6 @@ add_executable(action_server src/action_server.cpp src/HaikuActionServer.cpp
 Now we link the previously built interface library to use the code generated for the Haiku action:
 ```
 target_link_libraries(action_server
-                      ${PROJECT_NAME}_interfaces)target_link_libraries(action_server
                       ${PROJECT_NAME}_interfaces)
 ```
 Then we list dependencies:
