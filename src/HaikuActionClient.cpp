@@ -185,5 +185,4 @@ HaikuActionClient::result_callback(const HaikuGoalHandle::WrappedResult &result)
     _activeGoalHandle = nullptr;
     
     RCLCPP_INFO(this->get_logger(), "Please enter a number > 0, or hit Enter to cancel.");
-}                    
-
+}          
