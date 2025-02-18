@@ -9,44 +9,72 @@ endif()
 #                                         DEPENDENCIES                                             #
 ####################################################################################################
 
-include_directories(include
-                    ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp)
+include_directories(include)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(${PROJECT_NAME} REQUIRED)
 
 ####################################################################################################
-#                                    GENERATE SERVICE INTERFACES                                   #
+#                                       GENERATE INTERFACES                                        #
 ####################################################################################################
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "srv/Haiku.srv"
-  DEPENDENCIES std_msgs
-)
+                           "srv/Haiku.srv"
+                           DEPENDENCIES std_msgs)
+
+####################################################################################################
+#                                       BUILD TARGETS                                              #
+####################################################################################################
+
+ament_export_dependencies(rosidl_default_runtime)
+
+add_library(${PROJECT_NAME}_interfaces INTERFACE)
+
+target_link_libraries(${PROJECT_NAME}_interfaces INTERFACE
+                      ${PROJECT_NAME}__rosidl_typesupport_cpp)
+
+rosidl_get_typesupport_target(cpp_typesupport_target
+                              ${PROJECT_NAME} rosidl_typesupport_cpp)
 
 ####################################################################################################
 #                                          EXECUTABLES                                             #
 ####################################################################################################
 
-add_executable(service src/service.cpp src/HaikuService.cpp)
+# Service
+
+add_executable(service
+               src/service.cpp
+               src/HaikuService.cpp)
+
+target_link_libraries(service
+                      ${PROJECT_NAME}_interfaces)
 
 ament_target_dependencies(service
                           "rclcpp"
-                          "std_msgs"
-                          ${PROJECT_NAME})
+                          "std_msgs")
 
-add_executable(client src/client.cpp src/HaikuClient.cpp)
+# Action Client
+
+add_executable(client
+               src/client.cpp
+               src/HaikuClient.cpp)
+
+target_link_libraries(client
+                      ${PROJECT_NAME}_interfaces)
 
 ament_target_dependencies(client
                           "rclcpp"
-                          "std_msgs"
-                          ${PROJECT_NAME})
+                          "std_msgs")
 
-install(TARGETS service
-                client
+####################################################################################################
+#                                         INSTALLATION                                             #
+####################################################################################################
+
+install(TARGETS
+        service
+        client
         DESTINATION lib/${PROJECT_NAME})
-
+        
 ament_package()
