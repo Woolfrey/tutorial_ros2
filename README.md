@@ -478,13 +478,11 @@ We also need to ensure it can locate the necessary packages:
 ```
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
-find_package(${PROJECT_NAME} REQUIRED)
 ```
-- `rclcpp` is the ROS2 C++ client libraries,
-- `rclcpp_action` is the associated action libraries, and
-- `${PROJECT_NAME}$` is referring to `tutorial_ros2` where we compiled `Haiku.action`.
+- `rclcpp` is the ROS2 C++ client libraries, and
+- `rclcpp_action` is the associated action libraries.
 
-Beneath the line where we build the action `rosidl_generate_interfaces(...)` add the following:
+Beneath the line where we build the actfind_package(rosidl_default_generators REQUIRED)ion `rosidl_generate_interfaces(...)` add the following:
 ```
 ament_export_dependencies(rosidl_default_runtime)
 
@@ -959,16 +957,19 @@ add_executable(action_client src/action_client.cpp src/HaikuActionClient.cpp
 ```
 We will give it the name `action_client` which will be known to ROS2. We also list all the source files.
 
-Underneath, list the packages that it is dependent on:
+Underneath, we must link the built `Haiku.action` so we can use its header files:
+```
+target_link_libraries(action_client
+                      ${PROJECT_NAME}_interfaces)
+```
+Then, list the packages that it is dependent on:
 ```
 ament_target_dependencies(action_client
     "rclcpp"
     "rclcpp_action"
     "std_msgs"
-    ${PROJECT_NAME}
 )
 ```
-The term `${PROJECT_NAME}` refers to `tutorial_ros2` in which we created the `Haiku.action` action.
 
 Now tell the compiler to install it so ROS2 can actually find it:
 ```
