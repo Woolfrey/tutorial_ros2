@@ -8,52 +8,73 @@ endif()
 ####################################################################################################
 #                                         DEPENDENCIES                                             #
 ####################################################################################################
-include_directories(
-    include
-    ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp)
+
+include_directories(include)
 
 find_package(ament_cmake REQUIRED)
+find_package(action_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(${PROJECT_NAME} REQUIRED)
 
 ####################################################################################################
 #                                       GENERATE INTERFACES                                        #
 ####################################################################################################
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "action/Haiku.action"
-  DEPENDENCIES std_msgs
-)
+                           "action/Haiku.action"
+                            DEPENDENCIES std_msgs)
+
+ament_export_dependencies(rosidl_default_runtime)
+
+####################################################################################################
+#                                       BUILD TARGETS                                              #
+####################################################################################################
+
+add_library(${PROJECT_NAME}_interfaces INTERFACE)
+
+target_link_libraries(${PROJECT_NAME}_interfaces INTERFACE
+                      ${PROJECT_NAME}__rosidl_typesupport_cpp)
+
+rosidl_get_typesupport_target(cpp_typesupport_target
+                              ${PROJECT_NAME} rosidl_typesupport_cpp)
 
 ####################################################################################################
 #                                          EXECUTABLES                                             #
 ####################################################################################################
+
+# Action Server
+
 add_executable(action_server
-    src/action_server.cpp
-    src/HaikuActionServer.cpp
-)
+               src/action_server.cpp
+               src/HaikuActionServer.cpp)
+
+target_link_libraries(action_server
+                      ${PROJECT_NAME}_interfaces)
 
 ament_target_dependencies(action_server
-    "rclcpp"
-    "rclcpp_action"
-    "std_msgs"
-    ${PROJECT_NAME}
-)
+                          rclcpp
+                          rclcpp_action
+                          std_msgs)
+
+# Action Client
 
 add_executable(action_client
-    src/action_client.cpp
-    src/HaikuActionClient.cpp
-)
+               src/action_client.cpp
+               src/HaikuActionClient.cpp)
+
+target_link_libraries(action_client
+                      ${PROJECT_NAME}_interfaces)
 
 ament_target_dependencies(action_client
-    "rclcpp"
-    "rclcpp_action"
-    "std_msgs"
-    ${PROJECT_NAME}
-)
+                          rclcpp
+                          rclcpp_action
+                          std_msgs)
+
+####################################################################################################
+#                                         INSTALLATION                                             #
+####################################################################################################
 
 install(TARGETS
         action_server
@@ -61,3 +82,4 @@ install(TARGETS
         DESTINATION lib/${PROJECT_NAME})
         
 ament_package()
+
