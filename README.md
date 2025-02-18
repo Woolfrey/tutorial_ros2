@@ -329,16 +329,23 @@ We could program the class to return _different_ responses using the _same_ inte
 
 Now we need to modify the `CMakeLists.txt` file to build the new executable `service.cpp`. Insert these lines of code near the top of the file:
 ```
-include_directories(include
-                    ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp)
+include_directories(include)
 ```
-This tells the compiler to look for the header files in `include/`, as well as the location for the custom header file generated when building the `Haiku.srv` file.
+This tells the compiler to look for the header files in `include/`.
 
-We also want to append:
+Below the `rosidl_generate_interfaces(...)` line add:
 ```
-find_package(${PROJECT_NAME} REQUIRED)
+ament_export_dependencies(rosidl_default_runtime)
+
+add_library(${PROJECT_NAME}_interfaces INTERFACE)
+
+target_link_libraries(${PROJECT_NAME}_interfaces INTERFACE
+                      ${PROJECT_NAME}__rosidl_typesupport_cpp)
+
+rosidl_get_typesupport_target(cpp_typesupport_target
+                              ${PROJECT_NAME} rosidl_typesupport_cpp)
 ```
-since the `HaikuService` class is dependent on the `srv` built within this package.
+In these lines of code we export an interface library so that the header files generated for `Haiku.srv` can be linked.
 
 Now at the bottom of the file we tell the compiler to build the executable:
 ```
@@ -351,13 +358,17 @@ Next we list dependencies for the `service` executable:
 ament_target_dependencies(service
     rclcpp
     std_msgs
-    ${PROJECT_NAME}
 )
 ```
 It needs:
-- `rclcpp` for the ROS2 C++ client libraries,
-- `std_msgs` for the `std_msgs::msg::String` type, and
-- `${PROJECT_NAME}$` referring to `tutorial_ros` in which the custom `srv` is compiled.
+- `rclcpp` for the ROS2 C++ client libraries, and
+- `std_msgs` for the `std_msgs::msg::String` type.
+
+Then we link the previously built interface library:
+```
+target_link_libraries(service
+                      ${PROJECT_NAME}_interfaces)
+```
 
 Finally, we tell it to install the executable so ROS2 can find and run it:
 ```
@@ -662,17 +673,19 @@ add_executable(client src/client.cpp src/HaikuClient.cpp)
 ```
 We give it the name `client` and list its source files.
 
-Next we need to list its dependencies:
+Next we need to link the interface library to use the generated header files for the service:
+```
+target_link_libraries(client
+                      ${PROJECT_NAME}_interfaces)
+```
+
+Finally, we list its dependencies:
 ```
 ament_target_dependencies(client
                           "rclcpp"
-                          "std_msgs"
-                          ${PROJECT_NAME})
+                          "std_msgs")
 ```
-As before,
-1. ROS2 C++ client libraries,
-2. std_msgs package, and
-3. This project with the custom service header files.
+As before, the ROS2 C++ client libraries and the std_msgs package.
 
 Lastly, we append it to the install list so ROS2 can find it:
 ```
