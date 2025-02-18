@@ -12,7 +12,6 @@ endif()
 include_directories(include)
 
 find_package(ament_cmake REQUIRED)
-find_package(action_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -24,13 +23,13 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
                            "action/Haiku.action"
-                            DEPENDENCIES std_msgs)
-
-ament_export_dependencies(rosidl_default_runtime)
+                           DEPENDENCIES std_msgs)
 
 ####################################################################################################
 #                                       BUILD TARGETS                                              #
 ####################################################################################################
+
+ament_export_dependencies(rosidl_default_runtime)
 
 add_library(${PROJECT_NAME}_interfaces INTERFACE)
 
@@ -60,17 +59,17 @@ ament_target_dependencies(action_server
 
 # Action Client
 
-add_executable(action_client
-               src/action_client.cpp
-               src/HaikuActionClient.cpp)
+#add_executable(action_client
+#               src/action_client.cpp
+#               src/HaikuActionClient.cpp)
 
-target_link_libraries(action_client
-                      ${PROJECT_NAME}_interfaces)
+#target_link_libraries(action_client
+#                      ${PROJECT_NAME}_interfaces)
 
-ament_target_dependencies(action_client
-                          rclcpp
-                          rclcpp_action
-                          std_msgs)
+#ament_target_dependencies(action_client
+#                          rclcpp
+#                          rclcpp_action
+#                          std_msgs)
 
 ####################################################################################################
 #                                         INSTALLATION                                             #
@@ -78,8 +77,7 @@ ament_target_dependencies(action_client
 
 install(TARGETS
         action_server
-        action_client
+ #       action_client
         DESTINATION lib/${PROJECT_NAME})
         
 ament_package()
-
