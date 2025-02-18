@@ -93,6 +93,14 @@ find_package(rosidl_default_generators REQUIRED)
 - We need `std_msgs` for the `std_msgs/String` in `Haiku.action`,
 - We need the `rosidl_default_generators` for converting the `.action` in to code.
 
+Then add:
+```
+rosidl_generate_interfaces(${PROJECT_NAME}
+                           "action/Haiku.action"
+                           DEPENDENCIES std_msgs)
+```
+which tells ROS2 to generate the code needed to use the action.
+
 Now we need to update the `package.xml` file to match. First add these:
 ```
 <depend>std_msgs</depend>
@@ -101,6 +109,7 @@ Now we need to update the `package.xml` file to match. First add these:
 Here we need the additional `action_msgs` not found in the `CMakeLists.txt` file. Then add:
 ```
 <build_depend>rosidl_default_generators</build_depend>
+<exec_depend>rosidl_default_runtime</exec_depend>
 <member_of_group>rosidl_interface_packages</member_of_group>
 ```
 
@@ -461,21 +470,31 @@ executor.spin();
 
 Now we need to modify the `CMakeLists.txt` file to tell it to build our new executable. First we need to tell it to include header files:
 ```
-include_directories(
-    include
-    ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp)
+include_directories(include)
+
 ```
-The `rosidl_generator_cpp` line is referring to the location for the `tutorial_ros2/action/Haiku.hpp` files that ROS2 creates.
 
 We also need to ensure it can locate the necessary packages:
 ```
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
-find_package(${PROJECT_NAME} REQUIRED)
 ```
-- `rclcpp` is the ROS2 C++ client libraries,
-- `rclcpp_action` is the associated action libraries, and
-- `${PROJECT_NAME}$` is referring to `tutorial_ros2` where we compiled `Haiku.action`.
+- `rclcpp` is the ROS2 C++ client libraries, and
+- `rclcpp_action` is the associated action libraries.
+
+Beneath the line where we build the actfind_package(rosidl_default_generators REQUIRED)ion `rosidl_generate_interfaces(...)` add the following:
+```
+ament_export_dependencies(rosidl_default_runtime)
+
+add_library(${PROJECT_NAME}_interfaces INTERFACE)
+
+target_link_libraries(${PROJECT_NAME}_interfaces INTERFACE
+                      ${PROJECT_NAME}__rosidl_typesupport_cpp)
+
+rosidl_get_typesupport_target(cpp_typesupport_target
+                              ${PROJECT_NAME} rosidl_typesupport_cpp)
+```
+In these lines of code we create an interface library to link the previous built `Haiku.action`. This will enable our `HaikuActionServer` class to make use of it.
 
 Now toward the bottom we add:
 ```
@@ -485,13 +504,18 @@ add_executable(action_server src/action_server.cpp src/HaikuActionServer.cpp
 - `action_server` is the name that will appear in the package when we use `ros2 run`, and
 - We list the source files which contain all the necessary code.
 
-Next we list dependencies:
+Now we link the previously built interface library to use the code generated for the Haiku action:
+```
+target_link_libraries(action_server
+                      ${PROJECT_NAME}_interfaces)target_link_libraries(action_server
+                      ${PROJECT_NAME}_interfaces)
+```
+Then we list dependencies:
 ```
 ament_target_dependencies(action_server
     "rclcpp"
     "rclcpp_action"
     "std_msgs"
-    ${PROJECT_NAME}
 )
 ```
 This matches the `find_package` commands higher up in the file.
@@ -933,16 +957,19 @@ add_executable(action_client src/action_client.cpp src/HaikuActionClient.cpp
 ```
 We will give it the name `action_client` which will be known to ROS2. We also list all the source files.
 
-Underneath, list the packages that it is dependent on:
+Underneath, we must link the built `Haiku.action` so we can use its header files:
+```
+target_link_libraries(action_client
+                      ${PROJECT_NAME}_interfaces)
+```
+Then, list the packages that it is dependent on:
 ```
 ament_target_dependencies(action_client
     "rclcpp"
     "rclcpp_action"
     "std_msgs"
-    ${PROJECT_NAME}
 )
 ```
-The term `${PROJECT_NAME}` refers to `tutorial_ros2` in which we created the `Haiku.action` action.
 
 Now tell the compiler to install it so ROS2 can actually find it:
 ```
